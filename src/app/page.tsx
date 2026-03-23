@@ -113,38 +113,58 @@ export default function HomePage() {
             {[
               {
                 role: 'Admin',
-                color: 'red',
                 description:
                   'Full control over the platform — invite users, manage companies, assign mentorships, and run analytics.',
               },
               {
                 role: 'Mentor',
-                color: 'blue',
                 description:
                   'View assigned mentees, log interaction history (meetings, feedback, emails), and track their progress.',
               },
               {
                 role: 'Mentee',
-                color: 'green',
                 description:
                   'Complete your profile, view your assigned mentor and company, and track your internship journey.',
               },
-            ].map(({ role, color, description }) => (
-              <div
-                key={role}
-                className={`flex items-start gap-4 p-6 rounded-xl bg-${color}-50 border border-${color}-100`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-lg bg-${color}-100 flex items-center justify-center flex-shrink-0`}
-                >
-                  <span className={`text-${color}-700 font-bold text-sm`}>{role[0]}</span>
+            ].map(({ role, description }) => {
+              const styles =
+                role === 'Admin'
+                  ? {
+                      wrap: 'bg-red-50 border-red-100',
+                      icon: 'bg-red-100',
+                      initial: 'text-red-700',
+                      title: 'text-red-900',
+                      desc: 'text-red-700',
+                    }
+                  : role === 'Mentor'
+                  ? {
+                      wrap: 'bg-blue-50 border-blue-100',
+                      icon: 'bg-blue-100',
+                      initial: 'text-blue-700',
+                      title: 'text-blue-900',
+                      desc: 'text-blue-700',
+                    }
+                  : {
+                      wrap: 'bg-green-50 border-green-100',
+                      icon: 'bg-green-100',
+                      initial: 'text-green-700',
+                      title: 'text-green-900',
+                      desc: 'text-green-700',
+                    };
+              return (
+                <div key={role} className={`flex items-start gap-4 p-6 rounded-xl border ${styles.wrap}`}>
+                  <div
+                    className={`w-10 h-10 rounded-lg ${styles.icon} flex items-center justify-center flex-shrink-0`}
+                  >
+                    <span className={`${styles.initial} font-bold text-sm`}>{role[0]}</span>
+                  </div>
+                  <div>
+                    <h3 className={`font-semibold ${styles.title} mb-1`}>{role}</h3>
+                    <p className={`${styles.desc} text-sm`}>{description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className={`font-semibold text-${color}-900 mb-1`}>{role}</h3>
-                  <p className={`text-${color}-700 text-sm`}>{description}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
