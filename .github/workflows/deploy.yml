@@ -1,0 +1,65 @@
+name: Deploy to Plesk Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+
+            # Navigate to the application directory
+            cd ${{ secrets.APP_PATH }}
+
+            # Pull latest code
+            git pull origin main
+
+            # Install production dependencies
+            npm ci --omit=dev
+
+            # Regenerate Prisma client
+            npx prisma generate
+
+            # Build the application
+            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+            NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+            npm run build
+
+            # Restart the application
+            # Plesk Node.js apps are typically managed via PM2
+            if command -v pm2 &> /dev/null; then
+              pm2 restart internship-crm --update-env || pm2 start npm --name internship-crm -- start
+            fi
