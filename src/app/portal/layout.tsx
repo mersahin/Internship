@@ -1,0 +1,86 @@
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { GraduationCap, LayoutDashboard, User, BookOpen, LogOut } from 'lucide-react';
+
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect('/auth/signin');
+  }
+
+  if (session.user.role === 'ADMIN') {
+    redirect('/admin');
+  }
+
+  if (session.user.role === 'MENTOR') {
+    redirect('/mentor');
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-7 w-7 text-blue-600" />
+            <span className="font-bold text-gray-900">InternshipCRM</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Mentee Portal</p>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-1">
+          <Link
+            href="/portal"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
+          >
+            <LayoutDashboard className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
+            Dashboard
+          </Link>
+          <Link
+            href="/portal/profile"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
+          >
+            <User className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
+            My Profile
+          </Link>
+          <Link
+            href="/portal/interactions"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
+          >
+            <BookOpen className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
+            Interaction Logs
+          </Link>
+        </nav>
+
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center gap-3 mb-3 px-3">
+            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-purple-700 font-semibold text-sm">
+                {session.user.name?.[0] || 'M'}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{session.user.name}</p>
+              <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+            </div>
+          </div>
+          <Link
+            href="/api/auth/signout"
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-auto">
+        <div className="p-8">{children}</div>
+      </main>
+    </div>
+  );
+}

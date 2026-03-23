@@ -1,0 +1,260 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge, StatusBadge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { ArrowLeft, Plus, Trash2, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+
+interface InteractionLog {
+  id: string;
+  date: string;
+  notes: string;
+  type: string;
+}
+
+interface RelationDetail {
+  id: string;
+  status: string;
+  startDate: string;
+  mentee: {
+    fullName: string;
+    email: string;
+    university?: string;
+    department?: string;
+    graduationYear?: number;
+    skills: string[];
+    phone?: string;
+    cvUrl?: string;
+  };
+  company: { name: string; industry?: string } | null;
+  interactions: InteractionLog[];
+}
+
+const typeOptions = [
+  { value: 'Meeting', label: 'Meeting' },
+  { value: 'Feedback', label: 'Feedback' },
+  { value: 'Email', label: 'Email' },
+];
+
+export default function MenteeDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+
+  const [relation, setRelation] = useState<RelationDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ date: '', notes: '', type: 'Meeting' });
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const fetchRelation = useCallback(async () => {
+    const res = await fetch(`/api/mentorship/${id}`);
+    const data = await res.json();
+    setRelation(data.relation);
+    setLoading(false);
+  }, [id]);
+
+  useEffect(() => {
+    fetchRelation();
+  }, [fetchRelation]);
+
+  const handleAddInteraction = async () => {
+    if (!formData.date || !formData.notes) {
+      setFormError('Date and notes are required');
+      return;
+    }
+    setSubmitting(true);
+    setFormError('');
+    try {
+      const res = await fetch('/api/interactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relationId: id, ...formData }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || 'Failed');
+      }
+      await fetchRelation();
+      setShowForm(false);
+      setFormData({ date: '', notes: '', type: 'Meeting' });
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteInteraction = async (interactionId: string) => {
+    await fetch(`/api/interactions/${interactionId}`, { method: 'DELETE' });
+    await fetchRelation();
+  };
+
+  if (loading) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (!relation) return <div className="text-center py-12 text-gray-400">Relation not found</div>;
+
+  return (
+    <div>
+      <div className="mb-6">
+        <Link href="/mentor/mentees" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+          <ArrowLeft className="h-4 w-4" />
+          Back to mentees
+        </Link>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{relation.mentee.fullName}</h1>
+            <p className="text-gray-500">{relation.mentee.email}</p>
+          </div>
+          <StatusBadge status={relation.status} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Mentee info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+          </CardHeader>
+          <div className="space-y-3">
+            {relation.mentee.university && (
+              <div>
+                <p className="text-xs text-gray-500">University</p>
+                <p className="text-sm text-gray-900">{relation.mentee.university}</p>
+              </div>
+            )}
+            {relation.mentee.department && (
+              <div>
+                <p className="text-xs text-gray-500">Department</p>
+                <p className="text-sm text-gray-900">{relation.mentee.department}</p>
+              </div>
+            )}
+            {relation.mentee.graduationYear && (
+              <div>
+                <p className="text-xs text-gray-500">Graduation Year</p>
+                <p className="text-sm text-gray-900">{relation.mentee.graduationYear}</p>
+              </div>
+            )}
+            {relation.mentee.phone && (
+              <div>
+                <p className="text-xs text-gray-500">Phone</p>
+                <p className="text-sm text-gray-900">{relation.mentee.phone}</p>
+              </div>
+            )}
+            {relation.mentee.skills.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Skills</p>
+                <div className="flex flex-wrap gap-1">
+                  {relation.mentee.skills.map((skill) => (
+                    <Badge key={skill} variant="info" className="text-xs">{skill}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {relation.mentee.cvUrl && (
+              <a
+                href={relation.mentee.cvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+              >
+                <ExternalLink className="h-3 w-3" />
+                View CV
+              </a>
+            )}
+            {relation.company && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-500 font-medium mb-1">Company</p>
+                <p className="text-sm font-medium text-blue-900">{relation.company.name}</p>
+                {relation.company.industry && (
+                  <p className="text-xs text-blue-700">{relation.company.industry}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Interactions */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Interaction Log ({relation.interactions.length})</CardTitle>
+              <Button size="sm" onClick={() => setShowForm(!showForm)}>
+                <Plus className="h-4 w-4" />
+                Add Log
+              </Button>
+            </div>
+          </CardHeader>
+
+          {showForm && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-xl space-y-3">
+              {formError && (
+                <p className="text-sm text-red-600">{formError}</p>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData((p) => ({ ...p, date: e.target.value }))}
+                />
+                <Select
+                  label="Type"
+                  options={typeOptions}
+                  value={formData.type}
+                  onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
+                <textarea
+                  rows={3}
+                  value={formData.notes}
+                  onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
+                  placeholder="What was discussed..."
+                  className="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleAddInteraction} loading={submitting}>Save</Button>
+                <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {relation.interactions.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-8">No interactions logged yet</p>
+            )}
+            {relation.interactions.map((interaction) => (
+              <div key={interaction.id} className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
+                <Badge
+                  variant={interaction.type === 'Meeting' ? 'info' : interaction.type === 'Feedback' ? 'success' : 'warning'}
+                  className="text-xs flex-shrink-0 mt-0.5"
+                >
+                  {interaction.type}
+                </Badge>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-700">{interaction.notes}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(interaction.date).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDeleteInteraction(interaction.id)}
+                  className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}

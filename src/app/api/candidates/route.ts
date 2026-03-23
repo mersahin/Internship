@@ -1,0 +1,75 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const skills = searchParams.get('skills');
+    const graduationYear = searchParams.get('graduationYear');
+    const search = searchParams.get('search');
+
+    const where: Record<string, unknown> = {
+      role: 'MENTEE',
+    };
+
+    if (skills) {
+      const skillList = skills.split(',').map((s) => s.trim()).filter(Boolean);
+      if (skillList.length > 0) {
+        where.skills = { hasSome: skillList };
+      }
+    }
+
+    if (graduationYear) {
+      const year = parseInt(graduationYear, 10);
+      if (!isNaN(year)) {
+        where.graduationYear = year;
+      }
+    }
+
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { university: { contains: search, mode: 'insensitive' } },
+        { department: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const candidates = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        university: true,
+        department: true,
+        graduationYear: true,
+        skills: true,
+        cvUrl: true,
+        phone: true,
+        createdAt: true,
+        menteeRelations: {
+          where: { status: 'ACTIVE' },
+          include: {
+            mentor: { select: { id: true, fullName: true } },
+            company: { select: { id: true, name: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ candidates });
+  } catch (error) {
+    console.error('Get candidates error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
