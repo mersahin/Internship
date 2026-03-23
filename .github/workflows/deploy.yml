@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   deploy:
-    name: Build & Deploy
+    name: ${{ github.event_name == 'pull_request' && 'Preview Deploy' || 'Production Deploy' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -28,9 +31,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_URL: ${{ github.event_name == 'pull_request' && secrets.PREVIEW_URL || secrets.NEXTAUTH_URL }}
 
-      - name: Deploy to server via SSH
+      # ── Production deploy (push to main) ────────────────────────────────────
+      - name: Deploy to production via SSH
+        if: github.event_name == 'push'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -40,29 +45,101 @@ jobs:
           script: |
             set -e
 
-            # Navigate to the application directory
             cd ${{ secrets.APP_PATH }}
 
-            # Export environment variables for Prisma and Next.js
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
 
-            # Pull latest code
             git pull origin main
 
-            # Install production dependencies
             npm ci --omit=dev
 
-            # Regenerate Prisma client and sync MySQL schema
             npx prisma generate
             npx prisma db push --accept-data-loss
 
-            # Build the application
             npm run build
 
-            # Restart the application
-            # Plesk Node.js apps are typically managed via PM2
             if command -v pm2 &> /dev/null; then
               pm2 restart internship-crm --update-env || pm2 start npm --name internship-crm -- start
             fi
+
+      # ── Preview deploy (pull_request) ───────────────────────────────────────
+      - name: Deploy preview via SSH
+        if: github.event_name == 'pull_request'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+
+            # Initialise the preview directory from the repo if it doesn't exist yet
+            if [ ! -d "${{ secrets.PREVIEW_APP_PATH }}" ]; then
+              git clone $(git -C ${{ secrets.APP_PATH }} remote get-url origin) ${{ secrets.PREVIEW_APP_PATH }}
+            fi
+
+            cd ${{ secrets.PREVIEW_APP_PATH }}
+
+            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+            export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
+            export NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}"
+            export PORT=3001
+
+            # Check out the PR branch
+            git fetch origin ${{ github.head_ref }}
+            git checkout ${{ github.head_ref }}
+            git pull origin ${{ github.head_ref }}
+
+            npm ci --omit=dev
+
+            npx prisma generate
+            npx prisma db push --accept-data-loss
+
+            npm run build
+
+            if command -v pm2 &> /dev/null; then
+              pm2 restart internship-crm-preview --update-env || \
+              PORT=3001 pm2 start npm --name internship-crm-preview -- start
+            fi
+
+      - name: Post preview URL comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ secrets.PREVIEW_URL }}';
+            const body = `### 🔍 Preview deployment ready\n\n` +
+              `Branch **\`${{ github.head_ref }}\`** has been deployed to the preview server.\n\n` +
+              `**URL:** ${previewUrl}\n\n` +
+              `> This preview is updated automatically on every push to this PR.`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('Preview deployment ready')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
