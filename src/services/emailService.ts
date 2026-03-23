@@ -145,14 +145,13 @@ export async function checkMentorInteractionReminders() {
   };
 }
 
-let cronInitialized = false;
+const scheduledTasks = new Map<string, ReturnType<typeof cron.schedule>>();
 
 export function initCronJobs() {
-  if (cronInitialized) return;
-  cronInitialized = true;
+  if (scheduledTasks.has('mentor-reminders')) return;
 
   // Run every day at 9:00 AM
-  cron.schedule('0 9 * * *', async () => {
+  const task = cron.schedule('0 9 * * *', async () => {
     console.log('[Cron] Running mentor interaction reminder check...');
     try {
       const result = await checkMentorInteractionReminders();
@@ -162,5 +161,6 @@ export function initCronJobs() {
     }
   });
 
+  scheduledTasks.set('mentor-reminders', task);
   console.log('[Cron] Scheduled jobs initialized');
 }
