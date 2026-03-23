@@ -43,19 +43,22 @@ jobs:
             # Navigate to the application directory
             cd ${{ secrets.APP_PATH }}
 
+            # Export environment variables for Prisma and Next.js
+            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+            export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
+            export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
+
             # Pull latest code
             git pull origin main
 
             # Install production dependencies
             npm ci --omit=dev
 
-            # Regenerate Prisma client
+            # Regenerate Prisma client and sync MySQL schema
             npx prisma generate
+            npx prisma db push --accept-data-loss
 
             # Build the application
-            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
-            NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
             npm run build
 
             # Restart the application

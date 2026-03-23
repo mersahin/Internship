@@ -137,7 +137,7 @@ export default async function MentorDashboard() {
                     <p className="text-xs text-blue-600 mb-2">📍 {rel.company.name}</p>
                   )}
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {rel.mentee.skills.slice(0, 3).map((skill) => (
+                    {(rel.mentee.skills as string[]).slice(0, 3).map((skill) => (
                       <Badge key={skill} variant="info" className="text-xs">
                         {skill}
                       </Badge>

@@ -45,7 +45,7 @@ export default async function PortalDashboard() {
   const session = await getServerSession(authOptions);
   const { user, activeRelation } = await getMenteeData(session!.user.id);
 
-  const profileComplete = user?.university && user?.skills && user.skills.length > 0;
+  const profileComplete = user?.university && user?.skills && (user.skills as string[]).length > 0;
 
   return (
     <div>
@@ -115,11 +115,11 @@ export default async function PortalDashboard() {
                 <p className="text-sm text-gray-900">{user.graduationYear}</p>
               </div>
             )}
-            {user?.skills && user.skills.length > 0 && (
+            {user?.skills && (user.skills as string[]).length > 0 && (
               <div>
                 <p className="text-xs text-gray-500 mb-1.5">Skills</p>
                 <div className="flex flex-wrap gap-1">
-                  {user.skills.map((skill) => (
+                  {(user.skills as string[]).map((skill) => (
                     <Badge key={skill} variant="info" className="text-xs">
                       {skill}
                     </Badge>

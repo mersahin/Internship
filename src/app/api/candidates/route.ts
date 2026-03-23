@@ -20,12 +20,10 @@ export async function GET(request: Request) {
       role: 'MENTEE',
     };
 
-    if (skills) {
-      const skillList = skills.split(',').map((s) => s.trim()).filter(Boolean);
-      if (skillList.length > 0) {
-        where.skills = { hasSome: skillList };
-      }
-    }
+    // skills filtering is applied in-memory after fetching (MySQL JSON arrays don't support hasSome)
+    const skillList = skills
+      ? skills.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+      : [];
 
     if (graduationYear) {
       const year = parseInt(graduationYear, 10);
@@ -36,14 +34,14 @@ export async function GET(request: Request) {
 
     if (search) {
       where.OR = [
-        { fullName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { university: { contains: search, mode: 'insensitive' } },
-        { department: { contains: search, mode: 'insensitive' } },
+        { fullName: { contains: search } },
+        { email: { contains: search } },
+        { university: { contains: search } },
+        { department: { contains: search } },
       ];
     }
 
-    const candidates = await prisma.user.findMany({
+    const rawCandidates = await prisma.user.findMany({
       where,
       select: {
         id: true,
@@ -66,6 +64,15 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Normalise skills (stored as JSON array) and apply optional skill filter
+    const candidates = rawCandidates
+      .map((c) => ({ ...c, skills: (c.skills ?? []) as string[] }))
+      .filter((c) =>
+        skillList.length === 0
+          ? true
+          : skillList.some((s) => c.skills.map((k) => k.toLowerCase()).includes(s))
+      );
 
     return NextResponse.json({ candidates });
   } catch (error) {

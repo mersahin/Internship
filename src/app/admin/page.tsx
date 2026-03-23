@@ -161,14 +161,14 @@ export default async function AdminDashboard() {
                   <p className="text-xs text-gray-500">{candidate.university || candidate.email}</p>
                 </div>
                 <div className="flex flex-wrap gap-1 max-w-[120px] justify-end">
-                  {candidate.skills.slice(0, 2).map((skill) => (
+                  {(candidate.skills as string[]).slice(0, 2).map((skill) => (
                     <Badge key={skill} variant="info" className="text-xs">
                       {skill}
                     </Badge>
                   ))}
-                  {candidate.skills.length > 2 && (
+                  {(candidate.skills as string[]).length > 2 && (
                     <Badge variant="default" className="text-xs">
-                      +{candidate.skills.length - 2}
+                      +{(candidate.skills as string[]).length - 2}
                     </Badge>
                   )}
                 </div>
