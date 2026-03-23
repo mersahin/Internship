@@ -9,8 +9,9 @@ const updateRelationSchema = z.object({
   companyId: z.string().nullable().optional(),
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -18,7 +19,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const relation = await prisma.mentorshipRelation.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         mentor: { select: { id: true, fullName: true, email: true, department: true } },
         mentee: {
@@ -58,8 +59,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -67,7 +69,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const relation = await prisma.mentorshipRelation.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!relation) {
@@ -92,7 +94,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const updated = await prisma.mentorshipRelation.update({
-      where: { id: params.id },
+      where: { id },
       data: parsed.data,
       include: {
         mentor: { select: { id: true, fullName: true, email: true } },

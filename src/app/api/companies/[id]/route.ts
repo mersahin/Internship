@@ -21,8 +21,9 @@ const updateCompanySchema = z.object({
     .optional(),
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -30,7 +31,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const company = await prisma.company.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         needs: true,
         mentorships: {
@@ -53,8 +54,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== 'ADMIN') {
@@ -75,11 +77,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const company = await prisma.$transaction(async (tx) => {
       if (needs !== undefined) {
-        await tx.companyNeed.deleteMany({ where: { companyId: params.id } });
+        await tx.companyNeed.deleteMany({ where: { companyId: id } });
       }
 
       return tx.company.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           ...companyData,
           contactEmail: contactEmail || null,
@@ -98,15 +100,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await prisma.company.delete({ where: { id: params.id } });
+    await prisma.company.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Company deleted successfully' });
   } catch (error) {

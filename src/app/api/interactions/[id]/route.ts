@@ -24,8 +24,9 @@ async function getInteractionAndVerifyAccess(id: string, userId: string, role: s
   return { interaction, authorized };
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -33,7 +34,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const { interaction, authorized } = await getInteractionAndVerifyAccess(
-      params.id,
+      id,
       session.user.id,
       session.user.role
     );
@@ -53,8 +54,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -62,7 +64,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const { interaction, authorized } = await getInteractionAndVerifyAccess(
-      params.id,
+      id,
       session.user.id,
       session.user.role
     );
@@ -86,7 +88,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const updated = await prisma.interactionLog.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...parsed.data,
         date: parsed.data.date ? new Date(parsed.data.date) : undefined,
@@ -100,8 +102,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -109,7 +112,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     const { interaction, authorized } = await getInteractionAndVerifyAccess(
-      params.id,
+      id,
       session.user.id,
       session.user.role
     );
@@ -122,7 +125,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await prisma.interactionLog.delete({ where: { id: params.id } });
+    await prisma.interactionLog.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Interaction deleted successfully' });
   } catch (error) {
