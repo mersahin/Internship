@@ -48,8 +48,9 @@ jobs:
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
-            # Prevent git from opening a TTY to ask for credentials (non-interactive SSH session)
+            # Prevent git from prompting for credentials (non-interactive SSH session, public repo)
             export GIT_TERMINAL_PROMPT=0
+            git config --global credential.helper ''
 
             # Disable git ownership check (SSH user differs from Plesk's directory owner)
             git config --global --add safe.directory '*'
@@ -94,8 +95,9 @@ jobs:
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}"
             export PORT=3001
-            # Prevent git from opening a TTY to ask for credentials (non-interactive SSH session)
+            # Prevent git from prompting for credentials (non-interactive SSH session, public repo)
             export GIT_TERMINAL_PROMPT=0
+            git config --global credential.helper ''
 
             # Disable git ownership check (SSH user differs from Plesk's directory owner)
             git config --global --add safe.directory '*'
