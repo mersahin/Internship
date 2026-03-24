@@ -45,12 +45,19 @@ jobs:
           script: |
             set -e
 
-            cd ${{ secrets.APP_PATH }}
-
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
 
+            # Clone the repo on first deploy if the directory doesn't exist or isn't a git repo
+            if [ ! -d "${{ secrets.APP_PATH }}/.git" ]; then
+              git clone https://github.com/${{ github.repository }} ${{ secrets.APP_PATH }}
+            fi
+
+            cd ${{ secrets.APP_PATH }}
+
+            git fetch origin
+            git checkout main
             git pull origin main
 
             npm ci --omit=dev
@@ -76,17 +83,17 @@ jobs:
           script: |
             set -e
 
-            # Initialise the preview directory from the repo if it doesn't exist yet
-            if [ ! -d "${{ secrets.PREVIEW_APP_PATH }}" ]; then
-              git clone $(git -C ${{ secrets.APP_PATH }} remote get-url origin) ${{ secrets.PREVIEW_APP_PATH }}
-            fi
-
-            cd ${{ secrets.PREVIEW_APP_PATH }}
-
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}"
             export PORT=3001
+
+            # Clone the repo on first preview deploy if the directory doesn't exist or isn't a git repo
+            if [ ! -d "${{ secrets.PREVIEW_APP_PATH }}/.git" ]; then
+              git clone https://github.com/${{ github.repository }} ${{ secrets.PREVIEW_APP_PATH }}
+            fi
+
+            cd ${{ secrets.PREVIEW_APP_PATH }}
 
             # Check out the PR branch
             git fetch origin ${{ github.head_ref }}
