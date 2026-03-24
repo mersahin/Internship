@@ -49,8 +49,8 @@ jobs:
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
 
-            # Allow git to operate in the Plesk-owned directory regardless of who owns it
-            git config --global --add safe.directory ${{ secrets.APP_PATH }}
+            # Disable git ownership check (SSH user differs from Plesk's directory owner)
+            git config --global --add safe.directory '*'
 
             # Initialise git in the directory on first deploy (handles the case where
             # Plesk already created the document-root directory but it's not a git repo)
@@ -93,8 +93,8 @@ jobs:
             export NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}"
             export PORT=3001
 
-            # Allow git to operate in the Plesk-owned directory regardless of who owns it
-            git config --global --add safe.directory ${{ secrets.PREVIEW_APP_PATH }}
+            # Disable git ownership check (SSH user differs from Plesk's directory owner)
+            git config --global --add safe.directory '*'
 
             # Initialise git in the directory on first preview deploy (handles the case where
             # Plesk already created the document-root directory but it's not a git repo)
