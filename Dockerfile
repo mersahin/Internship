@@ -2,7 +2,10 @@
 FROM node:20-slim AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+# --ignore-scripts skips the postinstall `prisma generate` which needs
+# prisma/schema.prisma — not available in this layer. The builder stage
+# runs `prisma generate` explicitly once all source files are present.
+RUN npm ci --ignore-scripts
 
 # ---- builder ----
 FROM node:20-slim AS builder
