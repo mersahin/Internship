@@ -48,10 +48,6 @@ jobs:
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
-            # Prevent git from prompting for credentials (non-interactive SSH session, public repo)
-            export GIT_TERMINAL_PROMPT=0
-            git config --global credential.helper ''
-
             # Disable git ownership check (SSH user differs from Plesk's directory owner)
             git config --global --add safe.directory '*'
 
@@ -59,9 +55,9 @@ jobs:
             mkdir -p ${{ secrets.APP_PATH }}
             [ -d "${{ secrets.APP_PATH }}/.git" ] || git -C ${{ secrets.APP_PATH }} init
 
-            # Always ensure origin points to the correct repo (idempotent)
-            git -C ${{ secrets.APP_PATH }} remote set-url origin https://github.com/${{ github.repository }} 2>/dev/null || \
-              git -C ${{ secrets.APP_PATH }} remote add origin https://github.com/${{ github.repository }}
+            # Use PAT-authenticated HTTPS URL for private repo access (idempotent)
+            git -C ${{ secrets.APP_PATH }} remote set-url origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }} 2>/dev/null || \
+              git -C ${{ secrets.APP_PATH }} remote add origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
 
             cd ${{ secrets.APP_PATH }}
 
@@ -95,10 +91,6 @@ jobs:
             export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
             export NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}"
             export PORT=3001
-            # Prevent git from prompting for credentials (non-interactive SSH session, public repo)
-            export GIT_TERMINAL_PROMPT=0
-            git config --global credential.helper ''
-
             # Disable git ownership check (SSH user differs from Plesk's directory owner)
             git config --global --add safe.directory '*'
 
@@ -106,9 +98,9 @@ jobs:
             mkdir -p ${{ secrets.PREVIEW_APP_PATH }}
             [ -d "${{ secrets.PREVIEW_APP_PATH }}/.git" ] || git -C ${{ secrets.PREVIEW_APP_PATH }} init
 
-            # Always ensure origin points to the correct repo (idempotent)
-            git -C ${{ secrets.PREVIEW_APP_PATH }} remote set-url origin https://github.com/${{ github.repository }} 2>/dev/null || \
-              git -C ${{ secrets.PREVIEW_APP_PATH }} remote add origin https://github.com/${{ github.repository }}
+            # Use PAT-authenticated HTTPS URL for private repo access (idempotent)
+            git -C ${{ secrets.PREVIEW_APP_PATH }} remote set-url origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }} 2>/dev/null || \
+              git -C ${{ secrets.PREVIEW_APP_PATH }} remote add origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
 
             cd ${{ secrets.PREVIEW_APP_PATH }}
 
