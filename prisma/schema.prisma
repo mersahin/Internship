@@ -34,7 +34,7 @@ model User {
   university     String?
   department     String?
   graduationYear Int?
-  skills         Json
+  skills         Json     @default("[]")
   cvUrl          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

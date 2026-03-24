@@ -60,6 +60,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         fullName,
         role: invitation.role,
+        skills: [],
       },
       select: {
         id: true,
