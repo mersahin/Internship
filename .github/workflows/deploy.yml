@@ -62,9 +62,10 @@ jobs:
             cd ${{ secrets.APP_PATH }}
 
             git fetch origin
-            git checkout -B main origin/main
+            git reset --hard origin/main
+            git clean -fd
 
-            npm ci --omit=dev
+            npm ci
 
             npx prisma generate
             npx prisma db push --accept-data-loss
@@ -107,8 +108,10 @@ jobs:
             # Check out the PR branch
             git fetch origin ${{ github.head_ref }}
             git checkout -B ${{ github.head_ref }} origin/${{ github.head_ref }}
+            git reset --hard origin/${{ github.head_ref }}
+            git clean -fd
 
-            npm ci --omit=dev
+            npm ci
 
             npx prisma generate
             npx prisma db push --accept-data-loss
