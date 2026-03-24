@@ -1,0 +1,39 @@
+# ---- dependencies ----
+FROM node:20-slim AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+# ---- builder ----
+FROM node:20-slim AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Generate Prisma client (no DB connection needed at this stage)
+RUN npx prisma generate
+
+# Provide dummy env vars so Next.js can analyse routes without a live DB.
+# Real secrets are injected at runtime via `docker run -e`.
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    DATABASE_URL="mysql://build:build@127.0.0.1:3306/build" \
+    NEXTAUTH_SECRET="build-placeholder" \
+    NEXTAUTH_URL="http://localhost:3000"
+
+RUN npm run build
+
+# ---- runner ----
+FROM node:20-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+# Prisma schema + engine needed for `prisma db push` and runtime queries
+COPY --from=builder /app/prisma ./prisma
+
+EXPOSE 3000
+CMD ["npm", "start"]

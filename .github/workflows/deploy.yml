@@ -2,36 +2,57 @@ name: Deploy to Plesk Server
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  deploy:
+  build-and-deploy:
     name: ${{ github.event_name == 'pull_request' && 'Preview Deploy' || 'Production Deploy' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write       # push images to ghcr.io
+      pull-requests: write  # post/update preview comments
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          node-version: '20'
-          cache: 'npm'
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Set image metadata
+        id: meta
+        run: |
+          # Docker image names must be lower-case
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "tag=ghcr.io/${REPO}:pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
+            echo "container=internship-crm-preview" >> $GITHUB_OUTPUT
+            echo "port=3001" >> $GITHUB_OUTPUT
+            echo "nextauth_url=${{ secrets.PREVIEW_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=ghcr.io/${REPO}:latest" >> $GITHUB_OUTPUT
+            echo "container=internship-crm" >> $GITHUB_OUTPUT
+            echo "port=3000" >> $GITHUB_OUTPUT
+            echo "nextauth_url=${{ secrets.NEXTAUTH_URL }}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Build application
-        run: npm run build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ github.event_name == 'pull_request' && secrets.PREVIEW_URL || secrets.NEXTAUTH_URL }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tag }}
+          # No build-time secrets — all real values are injected at `docker run`
 
       # ── Production deploy (push to main) ────────────────────────────────────
       - name: Deploy to production via SSH
@@ -44,37 +65,35 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
+            IMAGE="${{ steps.meta.outputs.tag }}"
 
-            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
-            export NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
-            # Disable git ownership check (SSH user differs from Plesk's directory owner)
-            git config --global --add safe.directory '*'
+            # Pull the freshly built image from GHCR
+            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull "$IMAGE"
 
-            # Initialise git in the directory if needed
-            mkdir -p ${{ secrets.APP_PATH }}
-            [ -d "${{ secrets.APP_PATH }}/.git" ] || git -C ${{ secrets.APP_PATH }} init
+            # Apply schema changes before starting the new container.
+            # --network=host lets the container reach MySQL on localhost (same host).
+            docker run --rm \
+              --network=host \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              "$IMAGE" \
+              npx prisma db push --accept-data-loss
 
-            # Use PAT-authenticated HTTPS URL for private repo access (idempotent)
-            git -C ${{ secrets.APP_PATH }} remote set-url origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }} 2>/dev/null || \
-              git -C ${{ secrets.APP_PATH }} remote add origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
+            # Swap containers (zero-downtime swap)
+            docker stop internship-crm 2>/dev/null || true
+            docker rm   internship-crm 2>/dev/null || true
+            docker run -d \
+              --name internship-crm \
+              --network=host \
+              --restart=unless-stopped \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+              -e PORT=3000 \
+              "$IMAGE"
 
-            cd ${{ secrets.APP_PATH }}
-
-            git fetch origin
-            git reset --hard origin/main
-            git clean -fd
-
-            npm ci
-
-            npx prisma generate
-            npx prisma db push --accept-data-loss
-
-            npm run build
-
-            if command -v pm2 &> /dev/null; then
-              pm2 restart internship-crm --update-env || pm2 start npm --name internship-crm -- start
-            fi
+            # Remove dangling images to free disk space
+            docker image prune -f
 
       # ── Preview deploy (pull_request) ───────────────────────────────────────
       - name: Deploy preview via SSH
@@ -87,41 +106,35 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
+            IMAGE="${{ steps.meta.outputs.tag }}"
 
-            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            export NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
-            export NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}"
-            export PORT=3001
-            # Disable git ownership check (SSH user differs from Plesk's directory owner)
-            git config --global --add safe.directory '*'
+            # Pull the freshly built image from GHCR
+            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull "$IMAGE"
 
-            # Initialise git in the directory if needed
-            mkdir -p ${{ secrets.PREVIEW_APP_PATH }}
-            [ -d "${{ secrets.PREVIEW_APP_PATH }}/.git" ] || git -C ${{ secrets.PREVIEW_APP_PATH }} init
+            # Apply schema changes.
+            # --network=host lets the container reach MySQL on localhost (same host).
+            docker run --rm \
+              --network=host \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              "$IMAGE" \
+              npx prisma db push --accept-data-loss
 
-            # Use PAT-authenticated HTTPS URL for private repo access (idempotent)
-            git -C ${{ secrets.PREVIEW_APP_PATH }} remote set-url origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }} 2>/dev/null || \
-              git -C ${{ secrets.PREVIEW_APP_PATH }} remote add origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
+            # Swap preview containers
+            docker stop internship-crm-preview 2>/dev/null || true
+            docker rm   internship-crm-preview 2>/dev/null || true
+            docker run -d \
+              --name internship-crm-preview \
+              --network=host \
+              --restart=unless-stopped \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}" \
+              -e PORT=3001 \
+              "$IMAGE"
 
-            cd ${{ secrets.PREVIEW_APP_PATH }}
-
-            # Check out the PR branch
-            git fetch origin ${{ github.head_ref }}
-            git checkout -B ${{ github.head_ref }} origin/${{ github.head_ref }}
-            git reset --hard origin/${{ github.head_ref }}
-            git clean -fd
-
-            npm ci
-
-            npx prisma generate
-            npx prisma db push --accept-data-loss
-
-            npm run build
-
-            if command -v pm2 &> /dev/null; then
-              pm2 restart internship-crm-preview --update-env || \
-              PORT=3001 pm2 start npm --name internship-crm-preview -- start
-            fi
+            # Remove dangling images to free disk space
+            docker image prune -f
 
       - name: Post preview URL comment
         if: github.event_name == 'pull_request'
