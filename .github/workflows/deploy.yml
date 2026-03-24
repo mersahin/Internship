@@ -52,13 +52,13 @@ jobs:
             # Disable git ownership check (SSH user differs from Plesk's directory owner)
             git config --global --add safe.directory '*'
 
-            # Initialise git in the directory on first deploy (handles the case where
-            # Plesk already created the document-root directory but it's not a git repo)
+            # Initialise git in the directory if needed
             mkdir -p ${{ secrets.APP_PATH }}
-            if [ ! -d "${{ secrets.APP_PATH }}/.git" ]; then
-              git -C ${{ secrets.APP_PATH }} init
+            [ -d "${{ secrets.APP_PATH }}/.git" ] || git -C ${{ secrets.APP_PATH }} init
+
+            # Always ensure origin points to the correct repo (idempotent)
+            git -C ${{ secrets.APP_PATH }} remote set-url origin https://github.com/${{ github.repository }} 2>/dev/null || \
               git -C ${{ secrets.APP_PATH }} remote add origin https://github.com/${{ github.repository }}
-            fi
 
             cd ${{ secrets.APP_PATH }}
 
@@ -96,13 +96,13 @@ jobs:
             # Disable git ownership check (SSH user differs from Plesk's directory owner)
             git config --global --add safe.directory '*'
 
-            # Initialise git in the directory on first preview deploy (handles the case where
-            # Plesk already created the document-root directory but it's not a git repo)
+            # Initialise git in the directory if needed
             mkdir -p ${{ secrets.PREVIEW_APP_PATH }}
-            if [ ! -d "${{ secrets.PREVIEW_APP_PATH }}/.git" ]; then
-              git -C ${{ secrets.PREVIEW_APP_PATH }} init
+            [ -d "${{ secrets.PREVIEW_APP_PATH }}/.git" ] || git -C ${{ secrets.PREVIEW_APP_PATH }} init
+
+            # Always ensure origin points to the correct repo (idempotent)
+            git -C ${{ secrets.PREVIEW_APP_PATH }} remote set-url origin https://github.com/${{ github.repository }} 2>/dev/null || \
               git -C ${{ secrets.PREVIEW_APP_PATH }} remote add origin https://github.com/${{ github.repository }}
-            fi
 
             cd ${{ secrets.PREVIEW_APP_PATH }}
 
