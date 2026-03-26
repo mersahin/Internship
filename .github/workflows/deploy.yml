@@ -33,14 +33,8 @@ jobs:
           REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "tag=ghcr.io/${REPO}:pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
-            echo "container=internship-crm-preview" >> $GITHUB_OUTPUT
-            echo "port=3001" >> $GITHUB_OUTPUT
-            echo "nextauth_url=${{ secrets.PREVIEW_URL }}" >> $GITHUB_OUTPUT
           else
             echo "tag=ghcr.io/${REPO}:latest" >> $GITHUB_OUTPUT
-            echo "container=internship-crm" >> $GITHUB_OUTPUT
-            echo "port=3000" >> $GITHUB_OUTPUT
-            echo "nextauth_url=${{ secrets.NEXTAUTH_URL }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up Docker Buildx
@@ -54,87 +48,135 @@ jobs:
           tags: ${{ steps.meta.outputs.tag }}
           # No build-time secrets — all real values are injected at `docker run`
 
+      # ── SSH key setup (shared by both deploy steps) ──────────────────────────
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          # Write the private key exactly as stored (preserves newlines)
+          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Trust the server's host key
+          ssh-keyscan -H -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" \
+            >> ~/.ssh/known_hosts 2>/dev/null || \
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" \
+            >> ~/.ssh/known_hosts 2>/dev/null || true
+
       # ── Production deploy (push to main) ────────────────────────────────────
       - name: Deploy to production via SSH
         if: github.event_name == 'push'
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            set -e
-            IMAGE="${{ steps.meta.outputs.tag }}"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          IMAGE: ${{ steps.meta.outputs.tag }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          # Base64-encode secrets so special characters survive the SSH transport
+          B64_PAT=$(printf '%s' "$GH_PAT"         | base64 -w0)
+          B64_DB=$(printf '%s'  "$DATABASE_URL"    | base64 -w0)
+          B64_SEC=$(printf '%s' "$NEXTAUTH_SECRET" | base64 -w0)
+          B64_URL=$(printf '%s' "$NEXTAUTH_URL"    | base64 -w0)
 
-            # Pull the freshly built image from GHCR
-            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull "$IMAGE"
+          ssh -i ~/.ssh/deploy_key \
+            -p "${SSH_PORT:-22}" \
+            -o StrictHostKeyChecking=no \
+            "${SSH_USER}@${SSH_HOST}" "bash -s" << EOF
+          set -e
+          GH_PAT=\$(printf '%s' '$B64_PAT' | base64 -d)
+          DATABASE_URL=\$(printf '%s' '$B64_DB'  | base64 -d)
+          NEXTAUTH_SECRET=\$(printf '%s' '$B64_SEC' | base64 -d)
+          NEXTAUTH_URL=\$(printf '%s' '$B64_URL' | base64 -d)
+          IMAGE='$IMAGE'
+          ACTOR='$ACTOR'
 
-            # Apply schema changes before starting the new container.
-            # --network=host lets the container reach MySQL on localhost (same host).
-            docker run --rm \
-              --network=host \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              "$IMAGE" \
-              npx prisma db push --accept-data-loss
+          echo "\$GH_PAT" | docker login ghcr.io -u "\$ACTOR" --password-stdin
+          docker pull "\$IMAGE"
 
-            # Swap containers (zero-downtime swap)
-            docker stop internship-crm 2>/dev/null || true
-            docker rm   internship-crm 2>/dev/null || true
-            docker run -d \
-              --name internship-crm \
-              --network=host \
-              --restart=unless-stopped \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
-              -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
-              -e PORT=3000 \
-              "$IMAGE"
+          # Apply schema changes before starting the new container.
+          # --network=host lets the container reach MySQL on localhost (same host).
+          docker run --rm \
+            --network=host \
+            -e DATABASE_URL="\$DATABASE_URL" \
+            "\$IMAGE" \
+            npx prisma db push --accept-data-loss
 
-            # Remove dangling images to free disk space
-            docker image prune -f
+          # Swap containers
+          docker stop internship-crm 2>/dev/null || true
+          docker rm   internship-crm 2>/dev/null || true
+          docker run -d \
+            --name internship-crm \
+            --network=host \
+            --restart=unless-stopped \
+            -e DATABASE_URL="\$DATABASE_URL" \
+            -e NEXTAUTH_SECRET="\$NEXTAUTH_SECRET" \
+            -e NEXTAUTH_URL="\$NEXTAUTH_URL" \
+            -e PORT=3000 \
+            "\$IMAGE"
+
+          docker image prune -f
+          EOF
 
       # ── Preview deploy (pull_request) ───────────────────────────────────────
       - name: Deploy preview via SSH
         if: github.event_name == 'pull_request'
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            set -e
-            IMAGE="${{ steps.meta.outputs.tag }}"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          IMAGE: ${{ steps.meta.outputs.tag }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          PREVIEW_URL: ${{ secrets.PREVIEW_URL }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          B64_PAT=$(printf '%s' "$GH_PAT"         | base64 -w0)
+          B64_DB=$(printf '%s'  "$DATABASE_URL"    | base64 -w0)
+          B64_SEC=$(printf '%s' "$NEXTAUTH_SECRET" | base64 -w0)
+          B64_URL=$(printf '%s' "$PREVIEW_URL"     | base64 -w0)
 
-            # Pull the freshly built image from GHCR
-            echo "${{ secrets.GH_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull "$IMAGE"
+          ssh -i ~/.ssh/deploy_key \
+            -p "${SSH_PORT:-22}" \
+            -o StrictHostKeyChecking=no \
+            "${SSH_USER}@${SSH_HOST}" "bash -s" << EOF
+          set -e
+          GH_PAT=\$(printf '%s' '$B64_PAT' | base64 -d)
+          DATABASE_URL=\$(printf '%s' '$B64_DB'  | base64 -d)
+          NEXTAUTH_SECRET=\$(printf '%s' '$B64_SEC' | base64 -d)
+          PREVIEW_URL=\$(printf '%s' '$B64_URL' | base64 -d)
+          IMAGE='$IMAGE'
+          ACTOR='$ACTOR'
 
-            # Apply schema changes.
-            # --network=host lets the container reach MySQL on localhost (same host).
-            docker run --rm \
-              --network=host \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              "$IMAGE" \
-              npx prisma db push --accept-data-loss
+          echo "\$GH_PAT" | docker login ghcr.io -u "\$ACTOR" --password-stdin
+          docker pull "\$IMAGE"
 
-            # Swap preview containers
-            docker stop internship-crm-preview 2>/dev/null || true
-            docker rm   internship-crm-preview 2>/dev/null || true
-            docker run -d \
-              --name internship-crm-preview \
-              --network=host \
-              --restart=unless-stopped \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
-              -e NEXTAUTH_URL="${{ secrets.PREVIEW_URL }}" \
-              -e PORT=3001 \
-              "$IMAGE"
+          # Apply schema changes.
+          docker run --rm \
+            --network=host \
+            -e DATABASE_URL="\$DATABASE_URL" \
+            "\$IMAGE" \
+            npx prisma db push --accept-data-loss
 
-            # Remove dangling images to free disk space
-            docker image prune -f
+          # Swap preview containers
+          docker stop internship-crm-preview 2>/dev/null || true
+          docker rm   internship-crm-preview 2>/dev/null || true
+          docker run -d \
+            --name internship-crm-preview \
+            --network=host \
+            --restart=unless-stopped \
+            -e DATABASE_URL="\$DATABASE_URL" \
+            -e NEXTAUTH_SECRET="\$NEXTAUTH_SECRET" \
+            -e NEXTAUTH_URL="\$PREVIEW_URL" \
+            -e PORT=3001 \
+            "\$IMAGE"
+
+          docker image prune -f
+          EOF
 
       - name: Post preview URL comment
         if: github.event_name == 'pull_request'
