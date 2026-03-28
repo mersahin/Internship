@@ -50,16 +50,21 @@ jobs:
 
       # ── SSH key setup (shared by both deploy steps) ──────────────────────────
       - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          # Write the private key exactly as stored (preserves newlines)
-          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          # Write via env var (not inline interpolation) to preserve exact OpenSSH format.
+          # tr -d '\r' removes Windows-style carriage returns that corrupt the key.
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           # Trust the server's host key
-          ssh-keyscan -H -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" \
+          ssh-keyscan -H -p "${SSH_PORT:-22}" "$SSH_HOST" \
             >> ~/.ssh/known_hosts 2>/dev/null || \
-          ssh-keyscan -H "${{ secrets.SSH_HOST }}" \
+          ssh-keyscan -H "$SSH_HOST" \
             >> ~/.ssh/known_hosts 2>/dev/null || true
 
       # ── Production deploy (push to main) ────────────────────────────────────
@@ -70,14 +75,14 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           IMAGE: ${{ steps.meta.outputs.tag }}
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           ACTOR: ${{ github.actor }}
         run: |
           # Base64-encode secrets so special characters survive the SSH transport
-          B64_PAT=$(printf '%s' "$GH_PAT"         | base64 -w0)
+          B64_TOKEN=$(printf '%s' "$GH_TOKEN"        | base64 -w0)
           B64_DB=$(printf '%s'  "$DATABASE_URL"    | base64 -w0)
           B64_SEC=$(printf '%s' "$NEXTAUTH_SECRET" | base64 -w0)
           B64_URL=$(printf '%s' "$NEXTAUTH_URL"    | base64 -w0)
@@ -87,14 +92,14 @@ jobs:
             -o StrictHostKeyChecking=no \
             "${SSH_USER}@${SSH_HOST}" "bash -s" << EOF
           set -e
-          GH_PAT=\$(printf '%s' '$B64_PAT' | base64 -d)
+          GH_TOKEN=\$(printf '%s' '$B64_TOKEN' | base64 -d)
           DATABASE_URL=\$(printf '%s' '$B64_DB'  | base64 -d)
           NEXTAUTH_SECRET=\$(printf '%s' '$B64_SEC' | base64 -d)
           NEXTAUTH_URL=\$(printf '%s' '$B64_URL' | base64 -d)
           IMAGE='$IMAGE'
           ACTOR='$ACTOR'
 
-          echo "\$GH_PAT" | docker login ghcr.io -u "\$ACTOR" --password-stdin
+          echo "\$GH_TOKEN" | docker login ghcr.io -u "\$ACTOR" --password-stdin
           docker pull "\$IMAGE"
 
           # Apply schema changes before starting the new container.
@@ -129,13 +134,13 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           IMAGE: ${{ steps.meta.outputs.tag }}
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           PREVIEW_URL: ${{ secrets.PREVIEW_URL }}
           ACTOR: ${{ github.actor }}
         run: |
-          B64_PAT=$(printf '%s' "$GH_PAT"         | base64 -w0)
+          B64_TOKEN=$(printf '%s' "$GH_TOKEN"        | base64 -w0)
           B64_DB=$(printf '%s'  "$DATABASE_URL"    | base64 -w0)
           B64_SEC=$(printf '%s' "$NEXTAUTH_SECRET" | base64 -w0)
           B64_URL=$(printf '%s' "$PREVIEW_URL"     | base64 -w0)
@@ -145,14 +150,14 @@ jobs:
             -o StrictHostKeyChecking=no \
             "${SSH_USER}@${SSH_HOST}" "bash -s" << EOF
           set -e
-          GH_PAT=\$(printf '%s' '$B64_PAT' | base64 -d)
+          GH_TOKEN=\$(printf '%s' '$B64_TOKEN' | base64 -d)
           DATABASE_URL=\$(printf '%s' '$B64_DB'  | base64 -d)
           NEXTAUTH_SECRET=\$(printf '%s' '$B64_SEC' | base64 -d)
           PREVIEW_URL=\$(printf '%s' '$B64_URL' | base64 -d)
           IMAGE='$IMAGE'
           ACTOR='$ACTOR'
 
-          echo "\$GH_PAT" | docker login ghcr.io -u "\$ACTOR" --password-stdin
+          echo "\$GH_TOKEN" | docker login ghcr.io -u "\$ACTOR" --password-stdin
           docker pull "\$IMAGE"
 
           # Apply schema changes.
