@@ -1,0 +1,84 @@
+import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  token: z.string().min(1, 'Invitation token is required'),
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  fullName: z.string().min(1, 'Full name is required'),
+});
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const parsed = registerSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { token, email, password, fullName } = parsed.data;
+
+    const invitation = await prisma.invitationToken.findUnique({
+      where: { token },
+    });
+
+    if (!invitation) {
+      return NextResponse.json({ error: 'Invalid invitation token' }, { status: 400 });
+    }
+
+    if (invitation.used) {
+      return NextResponse.json({ error: 'Invitation token has already been used' }, { status: 400 });
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      return NextResponse.json({ error: 'Invitation token has expired' }, { status: 400 });
+    }
+
+    if (invitation.email.toLowerCase() !== email.toLowerCase()) {
+      return NextResponse.json(
+        { error: 'Email does not match the invitation' },
+        { status: 400 }
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        fullName,
+        role: invitation.role,
+        skills: [],
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    await prisma.invitationToken.update({
+      where: { token },
+      data: { used: true },
+    });
+
+    return NextResponse.json({ user }, { status: 201 });
+  } catch (error) {
+    console.error('Register error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

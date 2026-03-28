@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MENTOR
+  MENTEE
+}
+
+enum MentorshipStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum InteractionType {
+  Meeting
+  Feedback
+  Email
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String
+  role           Role     @default(MENTEE)
+  fullName       String
+  phone          String?
+  university     String?
+  department     String?
+  graduationYear Int?
+  skills         Json     @default("[]")
+  cvUrl          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  mentorRelations MentorshipRelation[] @relation("MentorRelations")
+  menteeRelations MentorshipRelation[] @relation("MenteeRelations")
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  contactEmail String?
+  industry     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  needs       CompanyNeed[]
+  mentorships MentorshipRelation[]
+}
+
+model CompanyNeed {
+  id        String @id @default(cuid())
+  companyId String
+  position  String
+  count     Int
+  period    String
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model MentorshipRelation {
+  id        String           @id @default(cuid())
+  mentorId  String
+  menteeId  String
+  companyId String?
+  startDate DateTime         @default(now())
+  status    MentorshipStatus @default(ACTIVE)
+
+  mentor       User              @relation("MentorRelations", fields: [mentorId], references: [id])
+  mentee       User              @relation("MenteeRelations", fields: [menteeId], references: [id])
+  company      Company?          @relation(fields: [companyId], references: [id])
+  interactions InteractionLog[]
+}
+
+model InteractionLog {
+  id         String          @id @default(cuid())
+  relationId String
+  date       DateTime
+  notes      String
+  type       InteractionType
+
+  relation MentorshipRelation @relation(fields: [relationId], references: [id], onDelete: Cascade)
+}
+
+model InvitationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  role      Role
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
