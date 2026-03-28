@@ -2,6 +2,9 @@
   "name": "internship-crm",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

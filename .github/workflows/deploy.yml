@@ -140,7 +140,7 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           IMAGE: ${{ steps.meta.outputs.tag }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PREVIEW }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           PREVIEW_URL: ${{ secrets.PREVIEW_URL }}
           ACTOR: ${{ github.actor }}
