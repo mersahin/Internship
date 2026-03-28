@@ -102,11 +102,14 @@ jobs:
           echo "\$GH_TOKEN" | docker login ghcr.io -u "\$ACTOR" --password-stdin
           docker pull "\$IMAGE"
 
+          # Replace localhost/127.0.0.1 with host.docker.internal so the container
+          # can reach MySQL running on the host (works on Linux with --add-host).
+          CONTAINER_DB=\$(echo "\$DATABASE_URL" | sed 's|localhost|host.docker.internal|g; s|127\.0\.0\.1|host.docker.internal|g')
+
           # Apply schema changes before starting the new container.
-          # --network=host lets the container reach MySQL on localhost (same host).
           docker run --rm \
-            --network=host \
-            -e DATABASE_URL="\$DATABASE_URL" \
+            --add-host=host.docker.internal:host-gateway \
+            -e DATABASE_URL="\$CONTAINER_DB" \
             "\$IMAGE" \
             npx prisma db push --accept-data-loss
 
@@ -115,12 +118,12 @@ jobs:
           docker rm   internship-crm 2>/dev/null || true
           docker run -d \
             --name internship-crm \
-            --network=host \
+            -p 3000:3000 \
+            --add-host=host.docker.internal:host-gateway \
             --restart=unless-stopped \
-            -e DATABASE_URL="\$DATABASE_URL" \
+            -e DATABASE_URL="\$CONTAINER_DB" \
             -e NEXTAUTH_SECRET="\$NEXTAUTH_SECRET" \
             -e NEXTAUTH_URL="\$NEXTAUTH_URL" \
-            -e PORT=3000 \
             "\$IMAGE"
 
           docker image prune -f
@@ -160,10 +163,14 @@ jobs:
           echo "\$GH_TOKEN" | docker login ghcr.io -u "\$ACTOR" --password-stdin
           docker pull "\$IMAGE"
 
+          # Replace localhost/127.0.0.1 with host.docker.internal so the container
+          # can reach MySQL running on the host (works on Linux with --add-host).
+          CONTAINER_DB=\$(echo "\$DATABASE_URL" | sed 's|localhost|host.docker.internal|g; s|127\.0\.0\.1|host.docker.internal|g')
+
           # Apply schema changes.
           docker run --rm \
-            --network=host \
-            -e DATABASE_URL="\$DATABASE_URL" \
+            --add-host=host.docker.internal:host-gateway \
+            -e DATABASE_URL="\$CONTAINER_DB" \
             "\$IMAGE" \
             npx prisma db push --accept-data-loss
 
@@ -172,12 +179,12 @@ jobs:
           docker rm   internship-crm-preview 2>/dev/null || true
           docker run -d \
             --name internship-crm-preview \
-            --network=host \
+            -p 3001:3000 \
+            --add-host=host.docker.internal:host-gateway \
             --restart=unless-stopped \
-            -e DATABASE_URL="\$DATABASE_URL" \
+            -e DATABASE_URL="\$CONTAINER_DB" \
             -e NEXTAUTH_SECRET="\$NEXTAUTH_SECRET" \
             -e NEXTAUTH_URL="\$PREVIEW_URL" \
-            -e PORT=3001 \
             "\$IMAGE"
 
           docker image prune -f
