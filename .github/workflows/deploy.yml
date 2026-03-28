@@ -106,10 +106,13 @@ jobs:
           # can reach MySQL running on the host (works on Linux with --add-host).
           CONTAINER_DB=\$(echo "\$DATABASE_URL" | sed 's|localhost|host.docker.internal|g; s|127\.0\.0\.1|host.docker.internal|g')
 
-          # Apply schema changes before starting the new container.
+          # Apply schema changes using host networking so localhost MySQL is reachable.
+          # (MySQL on Linux typically binds to 127.0.0.1 which is only reachable via
+          # --network=host; --add-host=host.docker.internal:host-gateway maps to the
+          # host's external IP which MySQL won't accept on a loopback-only binding.)
           docker run --rm \
-            --add-host=host.docker.internal:host-gateway \
-            -e DATABASE_URL="\$CONTAINER_DB" \
+            --network=host \
+            -e DATABASE_URL="\$DATABASE_URL" \
             "\$IMAGE" \
             npx prisma db push --accept-data-loss
 
@@ -167,10 +170,10 @@ jobs:
           # can reach MySQL running on the host (works on Linux with --add-host).
           CONTAINER_DB=\$(echo "\$DATABASE_URL" | sed 's|localhost|host.docker.internal|g; s|127\.0\.0\.1|host.docker.internal|g')
 
-          # Apply schema changes.
+          # Apply schema changes using host networking so localhost MySQL is reachable.
           docker run --rm \
-            --add-host=host.docker.internal:host-gateway \
-            -e DATABASE_URL="\$CONTAINER_DB" \
+            --network=host \
+            -e DATABASE_URL="\$DATABASE_URL" \
             "\$IMAGE" \
             npx prisma db push --accept-data-loss
 
