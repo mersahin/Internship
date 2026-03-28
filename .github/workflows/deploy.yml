@@ -116,13 +116,11 @@ jobs:
             "\$IMAGE" \
             npx prisma db push --accept-data-loss
 
-          # Force-free port 3000: kill any container using it (regardless of name).
-          docker ps -q --filter publish=3000 | xargs -r docker rm -f 2>/dev/null || true
           docker stop internship-crm 2>/dev/null || true
           docker rm   internship-crm 2>/dev/null || true
           docker run -d \
             --name internship-crm \
-            -p 3000:3000 \
+            -p 3200:3000 \
             --add-host=host.docker.internal:host-gateway \
             --restart=unless-stopped \
             -e DATABASE_URL="\$CONTAINER_DB" \
@@ -178,15 +176,11 @@ jobs:
             "\$IMAGE" \
             npx prisma db push --accept-data-loss
 
-          # Force-free port 3001: kill any container using it (regardless of name),
-          # then also stop/rm by name.  This prevents "address already in use"
-          # when an orphan container from a previous run still holds the port.
-          docker ps -q --filter publish=3001 | xargs -r docker rm -f 2>/dev/null || true
           docker stop internship-crm-preview 2>/dev/null || true
           docker rm   internship-crm-preview 2>/dev/null || true
           docker run -d \
             --name internship-crm-preview \
-            -p 3001:3000 \
+            -p 3201:3000 \
             --add-host=host.docker.internal:host-gateway \
             --restart=unless-stopped \
             -e DATABASE_URL="\$CONTAINER_DB" \
