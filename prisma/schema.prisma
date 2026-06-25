@@ -25,6 +25,23 @@ enum InteractionType {
   Email
 }
 
+// Mentee'nin staj/işe alım sürecindeki granular aşaması (Excel status kolonunun karşılığı)
+enum PipelineStatus {
+  BASVURU_100 // 100 ilk temas
+  ONAY_220 // 220 staj için onay bekliyor
+  GORUSME_250 // 250 görüşülecek
+  TANISTIRMA_270 // 270 tanıştırılacak
+  STAJ_BASLAYACAK_300 // 300 staj başlayacak
+  STAJ_DEVAM_450 // 450 staj devam ediyor
+  YARIM_BIRAKTI_460 // 460 staj yarım bıraktı
+  STAJ_BITTI_490 // 490 staj bitti
+  IS_ARIYOR_500 // 500 iş arıyor
+  ISE_ALINABILIR_600 // 600 işe alınabilir
+  ISE_ALINDI_660 // 660 işe alındı
+  IS_BULDU_700 // 700 iş buldu
+  BASKA_YERDE_STAJ_800 // 800 başka yerde staj buldu
+}
+
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
@@ -68,16 +85,17 @@ model CompanyNeed {
 }
 
 model MentorshipRelation {
-  id        String           @id @default(cuid())
-  mentorId  String
-  menteeId  String
-  companyId String?
-  startDate DateTime         @default(now())
-  status    MentorshipStatus @default(ACTIVE)
+  id             String           @id @default(cuid())
+  mentorId       String
+  menteeId       String
+  companyId      String?
+  startDate      DateTime         @default(now())
+  status         MentorshipStatus @default(ACTIVE)
+  pipelineStatus PipelineStatus   @default(BASVURU_100)
 
-  mentor       User              @relation("MentorRelations", fields: [mentorId], references: [id])
-  mentee       User              @relation("MenteeRelations", fields: [menteeId], references: [id])
-  company      Company?          @relation(fields: [companyId], references: [id])
+  mentor       User             @relation("MentorRelations", fields: [mentorId], references: [id])
+  mentee       User             @relation("MenteeRelations", fields: [menteeId], references: [id])
+  company      Company?         @relation(fields: [companyId], references: [id])
   interactions InteractionLog[]
 }
 
