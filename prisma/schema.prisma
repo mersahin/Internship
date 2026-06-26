@@ -25,6 +25,23 @@ enum InteractionType {
   Email
 }
 
+// Mentee'nin staj/işe alım sürecindeki granular aşaması (Excel status kolonunun karşılığı)
+enum PipelineStatus {
+  APPLICATION_100 // 100 tr: ilk temas
+  APPROVAL_PENDING_220 // 220 tr: staj için onay bekliyor
+  INTERVIEW_PENDING_250 // 250 tr: görüşülecek
+  INTRODUCTION_PENDING_270 // 270 tr: tanıştırılacak
+  INTERNSHIP_STARTING_300 // 300 tr: staj başlayacak
+  INTERNSHIP_IN_PROGRESS_450 // 450 tr: staj devam ediyor
+  INTERNSHIP_DROPPED_460 // 460 tr: staj yarım bıraktı
+  INTERNSHIP_COMPLETED_490 // 490 tr: staj bitti
+  JOB_SEEKING_500 // 500 tr: iş arıyor
+  HIREABLE_600 // 600 tr: işe alınabilir
+  HIRED_660 // 660 tr: işe alındı
+  EMPLOYED_700 // 700 tr: iş buldu
+  INTERNSHIP_FOUND_ELSEWHERE_800 // 800 tr: başka yerde staj buldu
+}
+
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
@@ -68,16 +85,17 @@ model CompanyNeed {
 }
 
 model MentorshipRelation {
-  id        String           @id @default(cuid())
-  mentorId  String
-  menteeId  String
-  companyId String?
-  startDate DateTime         @default(now())
-  status    MentorshipStatus @default(ACTIVE)
+  id             String           @id @default(cuid())
+  mentorId       String
+  menteeId       String
+  companyId      String?
+  startDate      DateTime         @default(now())
+  status         MentorshipStatus @default(ACTIVE)
+  pipelineStatus PipelineStatus   @default(APPLICATION_100)
 
-  mentor       User              @relation("MentorRelations", fields: [mentorId], references: [id])
-  mentee       User              @relation("MenteeRelations", fields: [menteeId], references: [id])
-  company      Company?          @relation(fields: [companyId], references: [id])
+  mentor       User             @relation("MentorRelations", fields: [mentorId], references: [id])
+  mentee       User             @relation("MenteeRelations", fields: [menteeId], references: [id])
+  company      Company?         @relation(fields: [companyId], references: [id])
   interactions InteractionLog[]
 }
 
