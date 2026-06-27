@@ -12,6 +12,7 @@
     "lint": "next lint",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
+    "import:csv": "node scripts/import-csv.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -39,6 +40,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.0.1",
+    "csv-parse": "^7.0.0",
     "eslint": "^8",
     "eslint-config-next": "^15.5.14",
     "postcss": "^8",
