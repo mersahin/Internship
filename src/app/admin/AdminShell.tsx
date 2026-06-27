@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   GraduationCap,
   LayoutDashboard,
@@ -28,9 +28,20 @@ const navLinks = [
 export function AdminShell({ children, userName, userEmail }: AdminShellProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 md:flex">
-      <header className="md:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
+      <div className="md:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <GraduationCap className="h-6 w-6 text-blue-600 shrink-0" />
@@ -47,7 +58,7 @@ export function AdminShell({ children, userName, userEmail }: AdminShellProps) {
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
-      </header>
+      </div>
 
       {isMenuOpen && (
         <button
