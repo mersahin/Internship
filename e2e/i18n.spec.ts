@@ -20,6 +20,9 @@ test('language switcher toggles the admin nav between EN and TR', async ({ page 
   await expect(page.getByRole('link', { name: 'Davet Gönder', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Adaylar', exact: true })).toBeVisible();
 
+  // Page content (not just nav) is translated too
+  await expect(page.getByRole('heading', { name: 'Yönetim Paneli', level: 1 })).toBeVisible();
+
   // Preference persists across navigations (cookie-based)
   await page.goto('/admin/mentorship');
   await expect(page.getByRole('link', { name: 'Davet Gönder', exact: true })).toBeVisible();

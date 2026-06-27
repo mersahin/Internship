@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { Send, Mail, Copy, Check } from 'lucide-react';
+import { useT } from '@/i18n/client';
 
 const inviteSchema = z.object({
   email: z.string().email('Invalid email'),
@@ -25,6 +26,7 @@ const roleOptions = [
 ];
 
 export default function InvitePage() {
+  const t = useT();
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,8 +99,8 @@ export default function InvitePage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Send Invitations</h1>
-        <p className="text-gray-500 mt-1">Invite mentors and mentees to join the platform</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.invite.title}</h1>
+        <p className="text-gray-500 mt-1">{t.invite.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -106,7 +108,7 @@ export default function InvitePage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-blue-600" />
-              <CardTitle>New Invitation</CardTitle>
+              <CardTitle>{t.invite.newInvitation}</CardTitle>
             </div>
           </CardHeader>
 
@@ -123,7 +125,7 @@ export default function InvitePage() {
 
           <form onSubmit={onSubmit} className="space-y-4">
             <Input
-              label="Email Address"
+              label={t.invite.emailAddress}
               type="email"
               required
               placeholder="user@example.com"
@@ -131,7 +133,7 @@ export default function InvitePage() {
               error={errors.email?.message}
             />
             <Select
-              label="Role"
+              label={t.invite.role}
               required
               options={roleOptions}
               {...register('role')}
@@ -139,28 +141,28 @@ export default function InvitePage() {
             />
             <Button type="submit" className="w-full" loading={loading}>
               <Send className="h-4 w-4" />
-              Send Invitation
+              {t.invite.send}
             </Button>
           </form>
 
           <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-            <p className="text-sm font-medium text-blue-800 mb-2">How it works</p>
+            <p className="text-sm font-medium text-blue-800 mb-2">{t.invite.howItWorks}</p>
             <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-              <li>Enter the recipient&apos;s email and select their role</li>
-              <li>They receive an email with a registration link</li>
-              <li>If email isn&apos;t delivered, copy the link and share it manually</li>
-              <li>The link expires in 7 days</li>
+              <li>{t.invite.step1}</li>
+              <li>{t.invite.step2}</li>
+              <li>{t.invite.step3}</li>
+              <li>{t.invite.step4}</li>
             </ol>
           </div>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Invitations</CardTitle>
+            <CardTitle>{t.invite.recentInvitations}</CardTitle>
           </CardHeader>
           {sentInvites.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">
-              No invitations sent in this session
+              {t.invite.noneSent}
             </p>
           ) : (
             <div className="space-y-3">
@@ -170,7 +172,7 @@ export default function InvitePage() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">{invite.email}</p>
                       <p className="text-xs text-gray-400">
-                        {invite.time} · {invite.emailSent ? 'emailed' : 'not emailed'}
+                        {invite.time} · {invite.emailSent ? t.invite.emailed : t.invite.notEmailed}
                       </p>
                     </div>
                     <Badge
@@ -199,11 +201,11 @@ export default function InvitePage() {
                       >
                         {copied === invite.registerUrl ? (
                           <>
-                            <Check className="h-3.5 w-3.5" /> Kopyalandı
+                            <Check className="h-3.5 w-3.5" /> {t.invite.copied}
                           </>
                         ) : (
                           <>
-                            <Copy className="h-3.5 w-3.5" /> Kopyala
+                            <Copy className="h-3.5 w-3.5" /> {t.invite.copy}
                           </>
                         )}
                       </button>

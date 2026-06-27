@@ -6,6 +6,7 @@ import { Badge, StatusBadge } from '@/components/ui/Badge';
 import { Users, Building2, BookOpen, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { PIPELINE_STATUSES, pipelineLabel } from '@/lib/pipeline';
+import { getServerDictionary } from '@/i18n/server';
 
 async function getStats() {
   const [menteeCount, mentorCount, companyCount, activeRelations, recentRelations, recentCandidates, pipelineGroups] =
@@ -61,12 +62,13 @@ async function getStats() {
 export default async function AdminDashboard() {
   await getServerSession(authOptions);
   const stats = await getStats();
+  const { t } = await getServerDictionary();
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-1">Overview of your internship management system</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.dashboard.title}</h1>
+        <p className="text-gray-500 mt-1">{t.dashboard.subtitle}</p>
       </div>
 
       {/* Stats Grid */}
@@ -78,7 +80,7 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.menteeCount}</p>
-              <p className="text-sm text-gray-500">Mentees</p>
+              <p className="text-sm text-gray-500">{t.dashboard.mentees}</p>
             </div>
           </div>
         </Card>
@@ -90,7 +92,7 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.mentorCount}</p>
-              <p className="text-sm text-gray-500">Mentors</p>
+              <p className="text-sm text-gray-500">{t.dashboard.mentors}</p>
             </div>
           </div>
         </Card>
@@ -102,7 +104,7 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.companyCount}</p>
-              <p className="text-sm text-gray-500">Companies</p>
+              <p className="text-sm text-gray-500">{t.dashboard.companies}</p>
             </div>
           </div>
         </Card>
@@ -114,7 +116,7 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.activeRelations}</p>
-              <p className="text-sm text-gray-500">Active Mentorships</p>
+              <p className="text-sm text-gray-500">{t.dashboard.activeMentorships}</p>
             </div>
           </div>
         </Card>
@@ -123,8 +125,8 @@ export default async function AdminDashboard() {
       {/* Pipeline distribution */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Pipeline</CardTitle>
-          <CardDescription>Mentees per stage</CardDescription>
+          <CardTitle>{t.dashboard.pipeline}</CardTitle>
+          <CardDescription>{t.dashboard.perStage}</CardDescription>
         </CardHeader>
         {(() => {
           const max = Math.max(1, ...PIPELINE_STATUSES.map((s) => stats.pipelineCounts[s] ?? 0));
@@ -156,17 +158,17 @@ export default async function AdminDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Recent Mentorships</CardTitle>
-                <CardDescription>Latest mentor-mentee assignments</CardDescription>
+                <CardTitle>{t.dashboard.recentMentorships}</CardTitle>
+                <CardDescription>{t.dashboard.latestAssignments}</CardDescription>
               </div>
               <Link href="/admin/mentorship" className="text-sm text-blue-600 hover:underline">
-                View all
+                {t.dashboard.viewAll}
               </Link>
             </div>
           </CardHeader>
           <div className="space-y-3">
             {stats.recentRelations.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">No mentorships yet</p>
+              <p className="text-sm text-gray-400 text-center py-4">{t.dashboard.noMentorships}</p>
             )}
             {stats.recentRelations.map((rel) => (
               <div key={rel.id} className="flex items-center justify-between py-2">
@@ -189,17 +191,17 @@ export default async function AdminDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>New Candidates</CardTitle>
-                <CardDescription>Recently registered mentees</CardDescription>
+                <CardTitle>{t.dashboard.newCandidates}</CardTitle>
+                <CardDescription>{t.dashboard.recentlyRegistered}</CardDescription>
               </div>
               <Link href="/admin/candidates" className="text-sm text-blue-600 hover:underline">
-                View all
+                {t.dashboard.viewAll}
               </Link>
             </div>
           </CardHeader>
           <div className="space-y-3">
             {stats.recentCandidates.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">No candidates yet</p>
+              <p className="text-sm text-gray-400 text-center py-4">{t.dashboard.noCandidates}</p>
             )}
             {stats.recentCandidates.map((candidate) => (
               <div key={candidate.id} className="flex items-start justify-between py-2">

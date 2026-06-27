@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { pipelineLabel } from '@/lib/pipeline';
+import { useT } from '@/i18n/client';
 
 interface Interaction { id: string; date: string; notes: string; type: string }
 interface StatusChange { id: string; fromStatus: string; toStatus: string; createdAt: string; changedBy: { fullName: string } }
@@ -49,6 +50,7 @@ function Field({ label, value }: { label: string; value?: string | number | null
 
 export default function AdminMenteeDetailPage() {
   const id = useParams().id as string;
+  const t = useT();
   const [user, setUser] = useState<MenteeDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -63,8 +65,8 @@ export default function AdminMenteeDetailPage() {
     load();
   }, [load]);
 
-  if (loading) return <div className="text-center py-12 text-gray-400">Loading...</div>;
-  if (!user) return <div className="text-center py-12 text-gray-400">Not found</div>;
+  if (loading) return <div className="text-center py-12 text-gray-400">{t.common.loading}</div>;
+  if (!user) return <div className="text-center py-12 text-gray-400">{t.common.notFound}</div>;
 
   const rel = user.menteeRelations[0];
 
@@ -73,7 +75,7 @@ export default function AdminMenteeDetailPage() {
       <div className="mb-6">
         <Link href="/admin/candidates" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft className="h-4 w-4" />
-          Back to candidates
+          {t.candidateDetail.back}
         </Link>
         <div className="flex items-center justify-between">
           <div>
@@ -87,20 +89,20 @@ export default function AdminMenteeDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
+            <CardTitle>{t.candidateDetail.profile}</CardTitle>
           </CardHeader>
           <div className="space-y-3">
-            <Field label="University" value={user.university} />
-            <Field label="Department" value={user.department} />
-            <Field label="Graduation Year" value={user.graduationYear} />
-            <Field label="Phone" value={user.phone} />
-            <Field label="WhatsApp" value={user.whatsapp} />
-            <Field label="City" value={user.city} />
-            <Field label="Birth Date" value={user.birthDate ? new Date(user.birthDate).toLocaleDateString() : null} />
-            <Field label="Referral" value={user.referralSource} />
+            <Field label={t.candidateDetail.university} value={user.university} />
+            <Field label={t.candidateDetail.department} value={user.department} />
+            <Field label={t.candidateDetail.graduationYear} value={user.graduationYear} />
+            <Field label={t.candidateDetail.phone} value={user.phone} />
+            <Field label={t.candidateDetail.whatsapp} value={user.whatsapp} />
+            <Field label={t.candidateDetail.city} value={user.city} />
+            <Field label={t.candidateDetail.birthDate} value={user.birthDate ? new Date(user.birthDate).toLocaleDateString() : null} />
+            <Field label={t.candidateDetail.referral} value={user.referralSource} />
             {user.skills.length > 0 && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">Skills</p>
+                <p className="text-xs text-gray-500 mb-1">{t.candidateDetail.skills}</p>
                 <div className="flex flex-wrap gap-1">
                   {user.skills.map((s) => (
                     <Badge key={s} variant="info" className="text-xs">{s}</Badge>
@@ -110,7 +112,7 @@ export default function AdminMenteeDetailPage() {
             )}
             {user.cvUrl && (
               <a href={user.cvUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
-                <ExternalLink className="h-3 w-3" /> View CV
+                <ExternalLink className="h-3 w-3" /> {t.candidateDetail.viewCv}
               </a>
             )}
           </div>
@@ -118,22 +120,22 @@ export default function AdminMenteeDetailPage() {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Mentorship</CardTitle>
+            <CardTitle>{t.candidateDetail.mentorship}</CardTitle>
           </CardHeader>
           {!rel ? (
-            <p className="text-sm text-gray-400 py-6 text-center">Not assigned to a mentor yet</p>
+            <p className="text-sm text-gray-400 py-6 text-center">{t.candidateDetail.notAssigned}</p>
           ) : (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                <div><span className="text-gray-500">Mentor:</span> <span className="font-medium">{rel.mentor.fullName}</span></div>
-                {rel.company && <div><span className="text-gray-500">Company:</span> <span className="font-medium">{rel.company.name}</span></div>}
-                <div><span className="text-gray-500">Stage:</span> <span className="font-medium">{pipelineLabel(rel.pipelineStatus)}</span></div>
+                <div><span className="text-gray-500">{t.candidateDetail.mentor}:</span> <span className="font-medium">{rel.mentor.fullName}</span></div>
+                {rel.company && <div><span className="text-gray-500">{t.candidateDetail.company}:</span> <span className="font-medium">{rel.company.name}</span></div>}
+                <div><span className="text-gray-500">{t.candidateDetail.stage}:</span> <span className="font-medium">{pipelineLabel(rel.pipelineStatus)}</span></div>
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-2">Stage history ({rel.statusChanges.length})</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">{t.candidateDetail.stageHistory} ({rel.statusChanges.length})</p>
                 {rel.statusChanges.length === 0 ? (
-                  <p className="text-xs text-gray-400">No changes yet</p>
+                  <p className="text-xs text-gray-400">{t.candidateDetail.noChanges}</p>
                 ) : (
                   <ol className="space-y-2">
                     {rel.statusChanges.map((sc) => (
@@ -149,9 +151,9 @@ export default function AdminMenteeDetailPage() {
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-2">Interactions ({rel.interactions.length})</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">{t.candidateDetail.interactions} ({rel.interactions.length})</p>
                 {rel.interactions.length === 0 ? (
-                  <p className="text-xs text-gray-400">No interactions logged</p>
+                  <p className="text-xs text-gray-400">{t.candidateDetail.noInteractions}</p>
                 ) : (
                   <div className="space-y-2">
                     {rel.interactions.map((i) => (

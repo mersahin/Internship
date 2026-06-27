@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import Link from "next/link";
+import { useT } from "@/i18n/client";
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +36,7 @@ const graduationYearOptions = [
 ];
 
 export default function CandidatesPage() {
+  const t = useT();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -68,8 +70,8 @@ export default function CandidatesPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Candidates</h1>
-        <p className="text-gray-500 mt-1">Browse and filter registered mentees</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.candidates.title}</h1>
+        <p className="text-gray-500 mt-1">{t.candidates.subtitle}</p>
       </div>
 
       {error && (
@@ -134,7 +136,7 @@ export default function CandidatesPage() {
       ) : candidates.length === 0 ? (
         <Card className="text-center py-12">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No candidates found matching your filters</p>
+          <p className="text-gray-500">{t.candidates.none}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -154,9 +156,9 @@ export default function CandidatesPage() {
                     <p className="text-sm text-gray-500">{candidate.email}</p>
                   </div>
                   {activeRelation ? (
-                    <Badge variant="success" className="flex-shrink-0">Assigned</Badge>
+                    <Badge variant="success" className="flex-shrink-0">{t.candidates.assigned}</Badge>
                   ) : (
-                    <Badge variant="warning" className="flex-shrink-0">Unassigned</Badge>
+                    <Badge variant="warning" className="flex-shrink-0">{t.candidates.unassigned}</Badge>
                   )}
                 </div>
 
@@ -168,14 +170,14 @@ export default function CandidatesPage() {
                     </p>
                   )}
                   {candidate.graduationYear && (
-                    <p className="text-xs text-gray-600">📅 Class of {candidate.graduationYear}</p>
+                    <p className="text-xs text-gray-600">📅 {t.candidates.classOf} {candidate.graduationYear}</p>
                   )}
                   {candidate.phone && (
                     <p className="text-xs text-gray-600">📞 {candidate.phone}</p>
                   )}
                   {activeRelation && (
                     <p className="text-xs text-blue-600">
-                      👤 Mentor: {activeRelation.mentor.fullName}
+                      👤 {t.candidates.mentor}: {activeRelation.mentor.fullName}
                       {activeRelation.company && ` · ${activeRelation.company.name}`}
                     </p>
                   )}
@@ -199,7 +201,7 @@ export default function CandidatesPage() {
                     className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" />
-                    View CV
+                    {t.candidates.viewCv}
                   </a>
                 )}
               </Card>
