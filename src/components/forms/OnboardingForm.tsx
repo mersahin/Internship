@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
+import { useT } from '@/i18n/client';
 
 const step1Schema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
@@ -29,9 +30,10 @@ type Step1Data = z.infer<typeof step1Schema>;
 type Step2Data = z.infer<typeof step2Schema>;
 type Step3Data = z.infer<typeof step3Schema>;
 
-const steps = ['Personal Info', 'Education', 'Skills & CV'];
 
 export function OnboardingForm() {
+  const t = useT();
+  const steps = [t.onboarding.personalInfo, t.onboarding.education, t.onboarding.skillsCv];
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [allData, setAllData] = useState<Partial<Step1Data & Step2Data & Step3Data>>({});
@@ -147,22 +149,22 @@ export function OnboardingForm() {
       {/* Step 1 */}
       {currentStep === 0 && (
         <form onSubmit={handleStep1} className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t.onboarding.personalInformation}</h2>
           <Input
-            label="Full Name"
+            label={t.onboarding.fullName}
             required
             {...step1Form.register('fullName')}
             error={step1Form.formState.errors.fullName?.message}
           />
           <Input
-            label="Phone Number"
+            label={t.onboarding.phone}
             type="tel"
             placeholder="+1 (555) 000-0000"
             {...step1Form.register('phone')}
             error={step1Form.formState.errors.phone?.message}
           />
           <Button type="submit" className="w-full" size="lg">
-            Continue
+            {t.onboarding.continue}
           </Button>
         </form>
       )}
@@ -170,23 +172,23 @@ export function OnboardingForm() {
       {/* Step 2 */}
       {currentStep === 1 && (
         <form onSubmit={handleStep2} className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Education Details</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t.onboarding.educationDetails}</h2>
           <Input
-            label="University"
+            label={t.onboarding.university}
             required
             placeholder="e.g. MIT, Stanford, etc."
             {...step2Form.register('university')}
             error={step2Form.formState.errors.university?.message}
           />
           <Input
-            label="Department / Major"
+            label={t.onboarding.department}
             required
             placeholder="e.g. Computer Science"
             {...step2Form.register('department')}
             error={step2Form.formState.errors.department?.message}
           />
           <Select
-            label="Expected Graduation Year"
+            label={t.onboarding.graduationYear}
             required
             options={graduationYearOptions}
             placeholder="Select year"
@@ -195,10 +197,10 @@ export function OnboardingForm() {
           />
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(0)} className="flex-1" size="lg">
-              Back
+              {t.onboarding.back}
             </Button>
             <Button type="submit" className="flex-1" size="lg">
-              Continue
+              {t.onboarding.continue}
             </Button>
           </div>
         </form>
@@ -207,9 +209,9 @@ export function OnboardingForm() {
       {/* Step 3 */}
       {currentStep === 2 && (
         <form onSubmit={handleStep3} className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Skills & CV</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t.onboarding.skillsAndCv}</h2>
           <Input
-            label="Skills"
+            label={t.onboarding.skills}
             required
             placeholder="e.g. React, Python, Data Analysis"
             hint="Separate multiple skills with commas"
@@ -217,7 +219,7 @@ export function OnboardingForm() {
             error={step3Form.formState.errors.skills?.message}
           />
           <Input
-            label="CV URL"
+            label={t.onboarding.cvUrl}
             type="url"
             placeholder="https://drive.google.com/..."
             hint="Link to your CV (Google Drive, Dropbox, etc.)"
@@ -226,10 +228,10 @@ export function OnboardingForm() {
           />
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(1)} className="flex-1" size="lg">
-              Back
+              {t.onboarding.back}
             </Button>
             <Button type="submit" className="flex-1" size="lg" loading={loading}>
-              Complete Profile
+              {t.onboarding.complete}
             </Button>
           </div>
         </form>

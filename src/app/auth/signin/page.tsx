@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
@@ -19,6 +20,7 @@ const signinSchema = z.object({
 type SignInData = z.infer<typeof signinSchema>;
 
 export default function SignInPage() {
+  const t = useT();
   const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,8 +70,8 @@ export default function SignInPage() {
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-500 mt-2">Sign in to your InternshipCRM account</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t.auth.welcomeBack}</h1>
+          <p className="text-gray-500 mt-2">{t.auth.signinSubtitle}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -81,7 +83,7 @@ export default function SignInPage() {
 
           <form onSubmit={onSubmit} className="space-y-4">
             <Input
-              label="Email address"
+              label={t.auth.email}
               type="email"
               autoComplete="email"
               required
@@ -89,7 +91,7 @@ export default function SignInPage() {
               error={errors.email?.message}
             />
             <Input
-              label="Password"
+              label={t.auth.password}
               type="password"
               autoComplete="current-password"
               required
@@ -97,7 +99,7 @@ export default function SignInPage() {
               error={errors.password?.message}
             />
             <Button type="submit" className="w-full" size="lg" loading={loading}>
-              Sign In
+              {t.auth.signIn}
             </Button>
           </form>
 
