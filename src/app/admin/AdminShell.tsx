@@ -25,6 +25,62 @@ const navLinks = [
   { href: '/admin/mentorship', label: 'Mentorships', icon: Users },
 ];
 
+function SidebarContent({
+  onNavigate,
+  userName,
+  userEmail,
+}: {
+  onNavigate?: () => void;
+  userName?: string | null;
+  userEmail?: string | null;
+}) {
+  return (
+    <>
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <GraduationCap className="h-7 w-7 text-blue-600" />
+          <span className="font-bold text-gray-900">InternshipCRM</span>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">Admin Panel</p>
+      </div>
+
+      <nav className="flex-1 p-4 space-y-1">
+        {navLinks.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
+          >
+            <item.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex items-center gap-3 mb-3 px-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <span className="text-blue-700 font-semibold text-sm">{userName?.[0] || 'A'}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+            <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+          </div>
+        </div>
+        <Link
+          href="/api/auth/signout"
+          onClick={onNavigate}
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </Link>
+      </div>
+    </>
+  );
+}
+
 export function AdminShell({ children, userName, userEmail }: AdminShellProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -66,58 +122,30 @@ export function AdminShell({ children, userName, userEmail }: AdminShellProps) {
           aria-label="Close menu overlay"
           className="md:hidden fixed inset-0 z-30 bg-black/30"
           onClick={() => setIsMenuOpen(false)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+              setIsMenuOpen(false);
+            }
+          }}
         />
       )}
 
       <aside
         id="admin-mobile-menu"
-        className={`bg-white border-r border-gray-200 flex flex-col md:w-64 md:static md:translate-x-0 md:z-auto md:shadow-none ${
-          isMenuOpen
-            ? 'fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] shadow-2xl'
-            : 'hidden md:flex'
+        aria-hidden={!isMenuOpen}
+        className={`bg-white border-r border-gray-200 flex flex-col md:hidden ${
+          isMenuOpen ? 'fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] shadow-2xl' : 'hidden'
         }`}
       >
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-7 w-7 text-blue-600" />
-            <span className="font-bold text-gray-900">InternshipCRM</span>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Admin Panel</p>
-        </div>
+        <SidebarContent
+          onNavigate={() => setIsMenuOpen(false)}
+          userName={userName}
+          userEmail={userEmail}
+        />
+      </aside>
 
-        <nav className="flex-1 p-4 space-y-1">
-          {navLinks.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-            >
-              <item.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3 mb-3 px-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-700 font-semibold text-sm">{userName?.[0] || 'A'}</span>
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-              <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-            </div>
-          </div>
-          <Link
-            href="/api/auth/signout"
-            onClick={() => setIsMenuOpen(false)}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Link>
-        </div>
+      <aside className="hidden md:flex md:w-64 bg-white border-r border-gray-200 flex-col">
+        <SidebarContent userName={userName} userEmail={userEmail} />
       </aside>
 
       <main className="flex-1 overflow-auto">
