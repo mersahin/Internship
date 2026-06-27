@@ -145,10 +145,21 @@ async function apply(mapped) {
     if (!['ADMIN', 'MENTOR'].includes(owner.role))
       throw new Error(`Owner must be ADMIN or MENTOR (is ${owner.role})`);
 
+    // Find-or-create companies for the CSV "proje" column (cached).
+    const companyCache = new Map();
+    const companyId = async (name) => {
+      if (!name) return undefined;
+      if (companyCache.has(name)) return companyCache.get(name);
+      const found = (await prisma.company.findFirst({ where: { name } })) ?? (await prisma.company.create({ data: { name } }));
+      companyCache.set(name, found.id);
+      return found.id;
+    };
+
     let created = 0,
       updated = 0,
       relCreated = 0;
     for (const r of mapped) {
+      const relCompanyId = await companyId(r.project);
       const data = {
         fullName: r.fullName,
         role: 'MENTEE',
@@ -173,11 +184,16 @@ async function apply(mapped) {
       if (rel) {
         await prisma.mentorshipRelation.update({
           where: { id: rel.id },
-          data: { pipelineStatus: r.pipelineStatus },
+          data: { pipelineStatus: r.pipelineStatus, ...(relCompanyId ? { companyId: relCompanyId } : {}) },
         });
       } else {
         await prisma.mentorshipRelation.create({
-          data: { mentorId: owner.id, menteeId: user.id, pipelineStatus: r.pipelineStatus },
+          data: {
+            mentorId: owner.id,
+            menteeId: user.id,
+            pipelineStatus: r.pipelineStatus,
+            ...(relCompanyId ? { companyId: relCompanyId } : {}),
+          },
         });
         relCreated++;
       }

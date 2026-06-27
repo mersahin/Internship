@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Partner companies / projects from the original spreadsheet.
+const SEED_COMPANIES = ['BCS-IT', 'OKAY', 'NFC', 'Abics'];
+
 async function main() {
   const email = process.env.SEED_ADMIN_EMAIL || 'admin@example.com';
   const password = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
@@ -10,23 +13,23 @@ async function main() {
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    console.log(`User already exists: ${email} — skipping seed.`);
-    return;
+    console.log(`User already exists: ${email} — skipping admin seed.`);
+  } else {
+    const hashedPassword = await bcrypt.hash(password, 12);
+    await prisma.user.create({
+      data: { email, password: hashedPassword, fullName, role: 'ADMIN', skills: [] },
+    });
+    console.log(`Created ADMIN user: ${email}`);
   }
 
-  const hashedPassword = await bcrypt.hash(password, 12);
-  await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      fullName,
-      role: 'ADMIN',
-      skills: [],
-    },
-  });
-
-  console.log(`Created ADMIN user: ${email}`);
-  console.log('Sign in at /auth/signin with this email and SEED_ADMIN_PASSWORD (or default ChangeMe123!).');
+  // Idempotent company seed (Company.name is not unique, so check first).
+  for (const name of SEED_COMPANIES) {
+    const found = await prisma.company.findFirst({ where: { name } });
+    if (!found) {
+      await prisma.company.create({ data: { name } });
+      console.log(`Created company: ${name}`);
+    }
+  }
 }
 
 main()
