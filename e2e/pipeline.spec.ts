@@ -28,8 +28,8 @@ test('mentor can change a mentee pipeline stage and it persists', async ({ page 
 
     // Open the mentee detail page and move the stage forward
     await page.goto(`/mentor/mentees/${relation.id}`);
-    await expect(page.getByLabel('Pipeline aşaması')).toBeVisible();
-    await page.getByLabel('Pipeline aşaması').selectOption('INTERNSHIP_IN_PROGRESS_450');
+    await expect(page.getByLabel('Pipeline stage')).toBeVisible();
+    await page.getByLabel('Pipeline stage').selectOption('INTERNSHIP_IN_PROGRESS_450');
     await page.waitForTimeout(1800);
 
     // Persisted in the DB
@@ -38,7 +38,7 @@ test('mentor can change a mentee pipeline stage and it persists', async ({ page 
 
     // And reflected after reload
     await page.reload();
-    await expect(page.getByLabel('Pipeline aşaması')).toHaveValue('INTERNSHIP_IN_PROGRESS_450');
+    await expect(page.getByLabel('Pipeline stage')).toHaveValue('INTERNSHIP_IN_PROGRESS_450');
   } finally {
     await cleanupByEmail(mentorEmail);
     await cleanupByEmail(menteeEmail);

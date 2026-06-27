@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth';
+import { getServerDictionary } from "@/i18n/server";
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
@@ -51,6 +52,7 @@ async function getMentorData(mentorId: string) {
 
 export default async function MentorDashboard() {
   const session = await getServerSession(authOptions);
+  const { t } = await getServerDictionary();
   const { relations, recentInteractions } = await getMentorData(session!.user.id);
 
   const activeRelations = relations.filter((r) => r.status === 'ACTIVE');
@@ -59,9 +61,9 @@ export default async function MentorDashboard() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {session!.user.name}
+          {t.mentor.welcomeBack}, {session!.user.name}
         </h1>
-        <p className="text-gray-500 mt-1">Here&apos;s an overview of your mentees and interactions</p>
+        <p className="text-gray-500 mt-1">{t.mentor.dashSubtitle}</p>
       </div>
 
       {/* Stats */}
@@ -73,7 +75,7 @@ export default async function MentorDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{activeRelations.length}</p>
-              <p className="text-sm text-gray-500">Active Mentees</p>
+              <p className="text-sm text-gray-500">{t.mentor.activeMentees}</p>
             </div>
           </div>
         </Card>
@@ -87,7 +89,7 @@ export default async function MentorDashboard() {
               <p className="text-2xl font-bold text-gray-900">
                 {relations.reduce((sum, r) => sum + r._count.interactions, 0)}
               </p>
-              <p className="text-sm text-gray-500">Total Interactions</p>
+              <p className="text-sm text-gray-500">{t.mentor.totalInteractions}</p>
             </div>
           </div>
         </Card>
@@ -99,7 +101,7 @@ export default async function MentorDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{relations.length}</p>
-              <p className="text-sm text-gray-500">Total Relations</p>
+              <p className="text-sm text-gray-500">{t.mentor.totalRelations}</p>
             </div>
           </div>
         </Card>
@@ -109,12 +111,12 @@ export default async function MentorDashboard() {
         {/* Mentees */}
         <Card>
           <CardHeader>
-            <CardTitle>My Mentees</CardTitle>
-            <CardDescription>Current active mentorship relationships</CardDescription>
+            <CardTitle>{t.mentor.myMentees}</CardTitle>
+            <CardDescription>{t.mentor.currentRelationships}</CardDescription>
           </CardHeader>
           <div className="space-y-4">
             {activeRelations.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">No active mentees assigned</p>
+              <p className="text-sm text-gray-400 text-center py-4">{t.mentor.noActiveMentees}</p>
             )}
             {activeRelations.map((rel) => {
               const lastInteraction = rel.interactions[0];
@@ -168,12 +170,12 @@ export default async function MentorDashboard() {
         {/* Recent Interactions */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Interactions</CardTitle>
-            <CardDescription>Your latest logged interactions</CardDescription>
+            <CardTitle>{t.mentor.recentInteractions}</CardTitle>
+            <CardDescription>{t.mentor.latestInteractions}</CardDescription>
           </CardHeader>
           <div className="space-y-3">
             {recentInteractions.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">No interactions logged yet</p>
+              <p className="text-sm text-gray-400 text-center py-4">{t.mentor.noInteractionsYet}</p>
             )}
             {recentInteractions.map((interaction) => (
               <div key={interaction.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
@@ -17,6 +18,7 @@ interface Interaction {
 }
 
 export default function MentorInteractionsPage() {
+  const t = useT();
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,8 +36,8 @@ export default function MentorInteractionsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Interaction Logs</h1>
-        <p className="text-gray-500 mt-1">All your logged interactions with mentees</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.nav.interactionLogs}</h1>
+        <p className="text-gray-500 mt-1">{t.mentor.interactionLogsSubtitle}</p>
       </div>
 
       {loading ? (
@@ -43,7 +45,7 @@ export default function MentorInteractionsPage() {
       ) : interactions.length === 0 ? (
         <Card className="text-center py-12">
           <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No interactions logged yet</p>
+          <p className="text-gray-500">{t.mentor.noInteractionsYet}</p>
           <p className="text-sm text-gray-400 mt-1">Go to a mentee&apos;s detail page to log an interaction</p>
         </Card>
       ) : (

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
@@ -27,6 +28,7 @@ interface MentorshipRelation {
 }
 
 export default function MenteesPage() {
+  const t = useT();
   const [relations, setRelations] = useState<MentorshipRelation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +46,8 @@ export default function MenteesPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">My Mentees</h1>
-        <p className="text-gray-500 mt-1">All your mentorship relationships</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.mentor.myMentees}</h1>
+        <p className="text-gray-500 mt-1">{t.mentor.menteesSubtitle}</p>
       </div>
 
       {loading ? (
@@ -53,7 +55,7 @@ export default function MenteesPage() {
       ) : relations.length === 0 ? (
         <Card className="text-center py-12">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No mentees assigned yet</p>
+          <p className="text-gray-500">{t.mentor.noMenteesAssigned}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
