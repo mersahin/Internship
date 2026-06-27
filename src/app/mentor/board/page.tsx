@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { GraduationCap } from 'lucide-react';
 import { PIPELINE_STATUSES, pipelineLabel } from '@/lib/pipeline';
+import { useT } from '@/i18n/client';
 
 interface Mentee {
   id: string;
@@ -19,6 +20,7 @@ interface Relation {
 }
 
 export default function MentorBoardPage() {
+  const t = useT();
   const router = useRouter();
   const [relations, setRelations] = useState<Relation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,14 +53,14 @@ export default function MentorBoardPage() {
     }
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (loading) return <div className="text-center py-12 text-gray-400">{t.common.loading}</div>;
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Pano</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t.nav.board}</h1>
         <p className="text-gray-500 mt-1">
-          Mentee&apos;lerini aşamalara göre takip et — kartı sürükleyip bırakarak aşama değiştir
+          {t.mentor.boardSubtitle}
         </p>
       </div>
 
@@ -105,7 +107,7 @@ export default function MentorBoardPage() {
                     )}
                     <div className="flex items-center gap-1 text-xs text-gray-400 mt-2">
                       <GraduationCap className="h-3 w-3" />
-                      {r._count.interactions} etkileşim
+                      {r._count.interactions} {t.mentor.interactions}
                     </div>
                   </div>
                 ))}

@@ -23,10 +23,10 @@ test('changing a stage records an entry in the status history', async ({ page })
     await page.waitForURL((u) => u.pathname.startsWith('/mentor'), { timeout: 20_000 });
 
     await page.goto(`/mentor/mentees/${relation.id}`);
-    await expect(page.getByText(/Aşama Geçmişi/)).toBeVisible();
+    await expect(page.getByText(/Stage history/)).toBeVisible();
 
     // Change the stage
-    await page.getByLabel('Pipeline aşaması').selectOption('INTERNSHIP_IN_PROGRESS_450');
+    await page.getByLabel('Pipeline stage').selectOption('INTERNSHIP_IN_PROGRESS_450');
     await page.waitForTimeout(1800);
 
     // History records the transition
@@ -36,7 +36,7 @@ test('changing a stage records an entry in the status history', async ({ page })
 
     // And it shows in the UI timeline (scope to the history list, not the select options)
     await page.reload();
-    await expect(page.getByText('Aşama Geçmişi (1)')).toBeVisible();
+    await expect(page.getByText('Stage history (1)')).toBeVisible();
     const entryItem = page.locator('ol li').first();
     await expect(entryItem).toContainText('450 · Staj devam ediyor');
     await expect(entryItem).toContainText('100 · İlk temas');
