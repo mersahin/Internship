@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Select } from '@/components/ui/Select';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
-import { pipelineLabel } from '@/lib/pipeline';
+import { pipelineLabel, pipelineOptions } from '@/lib/pipeline';
 import { useT, useLocale } from '@/i18n/client';
 
 interface Interaction { id: string; date: string; notes: string; type: string }
@@ -54,6 +55,7 @@ export default function AdminMenteeDetailPage() {
   const locale = useLocale();
   const [user, setUser] = useState<MenteeDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/users/${id}`);
@@ -61,6 +63,25 @@ export default function AdminMenteeDetailPage() {
     setUser(data.user ?? null);
     setLoading(false);
   }, [id]);
+
+  // Change the pipeline stage. Any transition is allowed (incl. moving back,
+  // e.g. 700 -> 220); the audit log only ever appends, so history is preserved.
+  const changeStage = useCallback(
+    async (relationId: string, pipelineStatus: string) => {
+      setSaving(true);
+      try {
+        await fetch(`/api/mentorship/${relationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pipelineStatus }),
+        });
+        await load();
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load]
+  );
 
   useEffect(() => {
     load();
@@ -130,7 +151,16 @@ export default function AdminMenteeDetailPage() {
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                 <div><span className="text-gray-500">{t.candidateDetail.mentor}:</span> <span className="font-medium">{rel.mentor.fullName}</span></div>
                 {rel.company && <div><span className="text-gray-500">{t.candidateDetail.company}:</span> <span className="font-medium">{rel.company.name}</span></div>}
-                <div><span className="text-gray-500">{t.candidateDetail.stage}:</span> <span className="font-medium">{pipelineLabel(rel.pipelineStatus, locale)}</span></div>
+              </div>
+
+              <div className="max-w-xs">
+                <Select
+                  label={t.candidateDetail.stage}
+                  options={pipelineOptions(locale)}
+                  value={rel.pipelineStatus}
+                  disabled={saving}
+                  onChange={(e) => changeStage(rel.id, e.target.value)}
+                />
               </div>
 
               <div>
