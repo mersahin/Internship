@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Users } from 'lucide-react';
+import { useT } from '@/i18n/client';
 
 interface MentorUser {
   id: string;
@@ -15,6 +16,7 @@ interface MentorUser {
 }
 
 export default function MentorsPage() {
+  const t = useT();
   const [mentors, setMentors] = useState<MentorUser[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,19 +32,19 @@ export default function MentorsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mentors</h1>
-        <p className="text-gray-500 mt-1">All mentors on the platform</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.mentors.title}</h1>
+        <p className="text-gray-500 mt-1">{t.mentors.subtitle}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Mentors ({mentors.length})</CardTitle>
+          <CardTitle>{t.mentors.title} ({mentors.length})</CardTitle>
         </CardHeader>
 
         {loading ? (
-          <p className="text-center py-12 text-gray-400">Loading...</p>
+          <p className="text-center py-12 text-gray-400">{t.common.loading}</p>
         ) : mentors.length === 0 ? (
-          <p className="text-center py-12 text-gray-400">No mentors yet</p>
+          <p className="text-center py-12 text-gray-400">{t.mentors.none}</p>
         ) : (
           <div className="divide-y divide-gray-50">
             {mentors.map((m) => (
@@ -61,7 +63,7 @@ export default function MentorsPage() {
                 </div>
                 <Badge variant="info" className="flex items-center gap-1 flex-shrink-0">
                   <Users className="h-3 w-3" />
-                  {m._count.mentorRelations} mentee
+                  {m._count.mentorRelations} {t.mentors.mentee}
                 </Badge>
               </div>
             ))}

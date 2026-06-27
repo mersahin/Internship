@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
@@ -20,6 +21,7 @@ interface Company {
 }
 
 export default function CompaniesPage() {
+  const t = useT();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -100,8 +102,8 @@ export default function CompaniesPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-          <p className="text-gray-500 mt-1">Manage partner companies and their internship needs</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.companiesPage.title}</h1>
+          <p className="text-gray-500 mt-1">{t.companiesPage.subtitle}</p>
         </div>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4" />

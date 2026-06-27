@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
@@ -29,6 +30,7 @@ interface MentorshipRelation {
 }
 
 export default function MentorshipPage() {
+  const t = useT();
   const [relations, setRelations] = useState<MentorshipRelation[]>([]);
   const [mentors, setMentors] = useState<User[]>([]);
   const [mentees, setMentees] = useState<User[]>([]);
@@ -119,8 +121,8 @@ export default function MentorshipPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mentorships</h1>
-          <p className="text-gray-500 mt-1">Assign mentees to mentors and companies</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.mentorships.title}</h1>
+          <p className="text-gray-500 mt-1">{t.mentorships.subtitle}</p>
         </div>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4" />
