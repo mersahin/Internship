@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -33,6 +34,7 @@ const graduationYearOptions = [
 ];
 
 export default function ProfilePage() {
+  const t = useT();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -109,18 +111,18 @@ export default function ProfilePage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-        <p className="text-gray-500 mt-1">Update your personal information and preferences</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.profileForm.title}</h1>
+        <p className="text-gray-500 mt-1">{t.profileForm.subtitle}</p>
       </div>
 
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
+          <CardTitle>{t.profileForm.profileInformation}</CardTitle>
         </CardHeader>
 
         {success && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-            ✓ Profile updated successfully
+            ✓ {t.profileForm.updated}
           </div>
         )}
         {error && (
@@ -131,46 +133,46 @@ export default function ProfilePage() {
 
         <form onSubmit={onSubmit} className="space-y-4">
           <Input
-            label="Full Name"
+            label={t.profileForm.fullName}
             required
             {...register('fullName')}
             error={errors.fullName?.message}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Phone Number"
+              label={t.profileForm.phone}
               type="tel"
               {...register('phone')}
               error={errors.phone?.message}
             />
             <Input
-              label="WhatsApp"
+              label={t.profileForm.whatsapp}
               type="tel"
               placeholder="+49..."
               {...register('whatsapp')}
               error={errors.whatsapp?.message}
             />
-            <Input label="City" placeholder="e.g. Monheim" {...register('city')} error={errors.city?.message} />
-            <Input label="Birth Date" type="date" {...register('birthDate')} error={errors.birthDate?.message} />
+            <Input label={t.profileForm.city} placeholder="e.g. Monheim" {...register('city')} error={errors.city?.message} />
+            <Input label={t.profileForm.birthDate} type="date" {...register('birthDate')} error={errors.birthDate?.message} />
           </div>
 
           <div className="border-t border-gray-100 pt-4">
-            <p className="text-sm font-semibold text-gray-700 mb-4">Education</p>
+            <p className="text-sm font-semibold text-gray-700 mb-4">{t.profileForm.education}</p>
             <div className="space-y-4">
               <Input
-                label="University"
+                label={t.profileForm.university}
                 placeholder="e.g. MIT"
                 {...register('university')}
                 error={errors.university?.message}
               />
               <Input
-                label="Department / Major"
+                label={t.profileForm.department}
                 placeholder="e.g. Computer Science"
                 {...register('department')}
                 error={errors.department?.message}
               />
               <Select
-                label="Graduation Year"
+                label={t.profileForm.graduationYear}
                 options={graduationYearOptions}
                 {...register('graduationYear')}
                 error={errors.graduationYear?.message}
@@ -179,17 +181,17 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t border-gray-100 pt-4">
-            <p className="text-sm font-semibold text-gray-700 mb-4">Skills & CV</p>
+            <p className="text-sm font-semibold text-gray-700 mb-4">{t.profileForm.skillsCv}</p>
             <div className="space-y-4">
               <Input
-                label="Skills"
+                label={t.profileForm.skills}
                 placeholder="React, Python, Data Analysis (comma-separated)"
                 hint="Separate multiple skills with commas"
                 {...register('skills')}
                 error={errors.skills?.message}
               />
               <Input
-                label="CV URL"
+                label={t.profileForm.cvUrl}
                 type="url"
                 placeholder="https://drive.google.com/..."
                 hint="Link to your CV"
@@ -201,7 +203,7 @@ export default function ProfilePage() {
 
           <div className="flex justify-end pt-2">
             <Button type="submit" loading={saving}>
-              Save Changes
+              {t.profileForm.save}
             </Button>
           </div>
         </form>

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from "@/i18n/client";
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -27,6 +28,7 @@ const registerSchema = z
 type RegisterData = z.infer<typeof registerSchema>;
 
 function RegisterForm() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState('');
@@ -82,8 +84,8 @@ function RegisterForm() {
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-500 mt-2">Register using your invitation token</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t.auth.createAccount}</h1>
+          <p className="text-gray-500 mt-2">{t.auth.registerSubtitle}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -95,21 +97,21 @@ function RegisterForm() {
 
           <form onSubmit={onSubmit} className="space-y-4">
             <Input
-              label="Invitation Token"
+              label={t.auth.invitationToken}
               required
               placeholder="Paste your invitation token here"
               {...register('token')}
               error={errors.token?.message}
             />
             <Input
-              label="Full Name"
+              label={t.auth.fullName}
               required
               autoComplete="name"
               {...register('fullName')}
               error={errors.fullName?.message}
             />
             <Input
-              label="Email address"
+              label={t.auth.email}
               type="email"
               required
               autoComplete="email"
@@ -118,7 +120,7 @@ function RegisterForm() {
               error={errors.email?.message}
             />
             <Input
-              label="Password"
+              label={t.auth.password}
               type="password"
               required
               autoComplete="new-password"
@@ -126,7 +128,7 @@ function RegisterForm() {
               error={errors.password?.message}
             />
             <Input
-              label="Confirm Password"
+              label={t.auth.confirmPassword}
               type="password"
               required
               autoComplete="new-password"
@@ -134,7 +136,7 @@ function RegisterForm() {
               error={errors.confirmPassword?.message}
             />
             <Button type="submit" className="w-full" size="lg" loading={loading}>
-              Create Account
+              {t.auth.createAccount}
             </Button>
           </form>
 

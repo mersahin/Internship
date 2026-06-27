@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth';
+import { getServerDictionary } from "@/i18n/server";
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -43,6 +44,7 @@ async function getMenteeData(menteeId: string) {
 
 export default async function PortalDashboard() {
   const session = await getServerSession(authOptions);
+  const { t } = await getServerDictionary();
   const { user, activeRelation } = await getMenteeData(session!.user.id);
 
   const profileComplete = user?.university && user?.skills && (user.skills as string[]).length > 0;
@@ -51,17 +53,17 @@ export default async function PortalDashboard() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome, {session!.user.name}!
+          {t.portal.welcome}, {session!.user.name}!
         </h1>
-        <p className="text-gray-500 mt-1">Your internship dashboard</p>
+        <p className="text-gray-500 mt-1">{t.portal.dashSubtitle}</p>
       </div>
 
       {!profileComplete && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center justify-between">
           <div>
-            <p className="font-medium text-yellow-800">Complete your profile</p>
+            <p className="font-medium text-yellow-800">{t.portal.completeProfile}</p>
             <p className="text-sm text-yellow-600 mt-0.5">
-              Add your university, skills, and CV to improve your chances of being matched.
+              {t.portal.completeProfileHint}
             </p>
           </div>
           <Link
@@ -79,7 +81,7 @@ export default async function PortalDashboard() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-blue-600" />
-              <CardTitle>My Profile</CardTitle>
+              <CardTitle>{t.portal.myProfile}</CardTitle>
             </div>
           </CardHeader>
           <div className="space-y-3">
@@ -151,7 +153,7 @@ export default async function PortalDashboard() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-blue-600" />
-              <CardTitle>My Mentorship</CardTitle>
+              <CardTitle>{t.portal.myMentorship}</CardTitle>
             </div>
           </CardHeader>
 
