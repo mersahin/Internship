@@ -20,7 +20,8 @@ test('admin can change their password from the account page', async ({ page }) =
     await page.waitForURL((u) => u.pathname.startsWith('/admin'), { timeout: 20_000 });
 
     await page.goto('/admin/account');
-    await page.getByLabel(/Current password/).fill(oldPw);
+    // 'Current password' appears in both the email card (0) and password card (1).
+    await page.getByLabel(/Current password/).nth(1).fill(oldPw);
     await page.getByLabel(/^New password/).fill(newPw);
     await page.getByLabel(/Confirm new password/).fill(newPw);
     const done = page.waitForResponse(
@@ -54,7 +55,9 @@ test('changing email updates the sidebar without a re-login', async ({ page }) =
     // sidebar shows the original email
     await expect(page.getByText(email, { exact: true })).toBeVisible();
 
-    await page.getByLabel(/Email address/).fill(newEmail);
+    const emailForm = page.locator('form', { has: page.getByRole('button', { name: 'Update email' }) });
+    await emailForm.getByLabel(/Email address/).fill(newEmail);
+    await emailForm.getByLabel(/Current password/).fill(pw); // re-auth required
     const done = page.waitForResponse(
       (r) => r.url().includes('/api/account') && r.request().method() === 'PUT'
     );
