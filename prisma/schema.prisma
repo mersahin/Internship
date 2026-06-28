@@ -71,6 +71,8 @@ model User {
   companyId      String?
   // How many times this user's public profile has been viewed.
   profileViews   Int       @default(0)
+  // When the user accepted the privacy/data terms (consent).
+  consentAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

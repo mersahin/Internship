@@ -221,6 +221,8 @@ const en = {
     unverifiedBanner: 'Your email isn’t verified yet — your account is read-only until you confirm it.',
     verifyResend: 'Resend verification email',
     verifyResent: 'Verification email sent.',
+    consentNote: 'By registering you accept our',
+    privacyLink: 'privacy terms',
   },
   usersAdmin: {
     title: 'Users',
@@ -354,6 +356,14 @@ const en = {
     skills: 'Skills',
     poweredBy: 'InternshipCRM',
   },
+  privacy: {
+    title: 'Privacy & data',
+    intro: 'We store the information you provide to manage mentorships and internships.',
+    use: 'Your data is used only to operate the platform — matching, tracking and communication.',
+    retention: 'We keep your data while your account is active. You can delete your account anytime from settings.',
+    rights: 'You can download all your data from your account settings at any time.',
+    back: 'Back to home',
+  },
   portal: {
     welcome: 'Welcome',
     dashSubtitle: 'Your internship dashboard',
@@ -424,6 +434,9 @@ const en = {
     deleteConfirm: 'Are you sure?',
     deleteYes: 'Yes, delete',
     deleteCancel: 'Cancel',
+    dataSection: 'Your data',
+    dataHint: 'Download a copy of all the data we hold about you.',
+    exportData: 'Download my data',
   },
 };
 
@@ -648,6 +661,8 @@ const tr: Dict = {
     unverifiedBanner: 'E-postan henüz doğrulanmadı — onaylayana kadar hesabın salt-okunur.',
     verifyResend: 'Doğrulama e-postasını yeniden gönder',
     verifyResent: 'Doğrulama e-postası gönderildi.',
+    consentNote: 'Kaydolarak şunu kabul edersin:',
+    privacyLink: 'gizlilik koşulları',
   },
   usersAdmin: {
     title: 'Kullanıcılar',
@@ -781,6 +796,14 @@ const tr: Dict = {
     skills: 'Yetenekler',
     poweredBy: 'InternshipCRM',
   },
+  privacy: {
+    title: 'Gizlilik & veri',
+    intro: 'Mentorluk ve staj sürecini yönetmek için sağladığın bilgileri saklarız.',
+    use: 'Verilerin yalnızca platformu işletmek için kullanılır — eşleştirme, takip ve iletişim.',
+    retention: 'Verilerini hesabın aktif olduğu sürece tutarız. Hesabını ayarlardan istediğin zaman silebilirsin.',
+    rights: 'Tüm verini istediğin zaman hesap ayarlarından indirebilirsin.',
+    back: 'Ana sayfaya dön',
+  },
   portal: {
     welcome: 'Hoş geldin',
     dashSubtitle: 'Staj panonuz',
@@ -851,6 +874,9 @@ const tr: Dict = {
     deleteConfirm: 'Emin misin?',
     deleteYes: 'Evet, sil',
     deleteCancel: 'Vazgeç',
+    dataSection: 'Verilerin',
+    dataHint: 'Hakkında tuttuğumuz tüm verinin bir kopyasını indir.',
+    exportData: 'Verimi indir',
   },
 };
 
