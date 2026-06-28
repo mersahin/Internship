@@ -79,11 +79,13 @@ export async function GET(request: Request) {
     // Normalise skills (stored as JSON array) and apply optional skill filter
     const candidates = rawCandidates
       .map((c) => ({ ...c, skills: (c.skills ?? []) as string[] }))
-      .filter((c) =>
-        skillList.length === 0
-          ? true
-          : skillList.some((s) => c.skills.map((k) => k.toLowerCase()).includes(s))
-      );
+      .filter((c) => {
+        if (skillList.length === 0) return true;
+        const owned = c.skills.map((k) => k.toLowerCase());
+        // Every typed term must be a substring of at least one of the candidate's
+        // skills (so "docke" matches "Docker"), case-insensitive.
+        return skillList.every((term) => owned.some((k) => k.includes(term)));
+      });
 
     return NextResponse.json({ candidates });
   } catch (error) {
