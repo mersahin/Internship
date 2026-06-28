@@ -7,6 +7,7 @@ import { getServerDictionary } from '@/i18n/server';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ResponsiveShell } from '@/components/ResponsiveShell';
 import { SidebarAvatar } from '@/components/SidebarAvatar';
+import { GlobalSearch } from '@/components/GlobalSearch';
 import { prisma } from '@/lib/prisma';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <ResponsiveShell
+      headerExtra={<GlobalSearch />}
       sidebar={
         <aside className="w-64 h-full bg-white border-r border-gray-200 flex flex-col">
         <div className="p-6 border-b border-gray-200">

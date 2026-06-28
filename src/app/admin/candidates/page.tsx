@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { SavedViews } from '@/components/SavedViews';
 import Link from "next/link";
 import { useT, useLocale } from "@/i18n/client";
 import { pipelineLabel } from '@/lib/pipeline';
@@ -186,6 +187,19 @@ export default function CandidatesPage() {
             Clear filters
           </Button>
         )}
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <SavedViews
+            storageKey="candidate-views"
+            current={{ search, skillFilter, yearFilter, statusFilter, cityFilter }}
+            onApply={(f) => {
+              setSearch(f.search || '');
+              setSkillFilter(f.skillFilter || '');
+              setYearFilter(f.yearFilter || '');
+              setStatusFilter(f.statusFilter || '');
+              setCityFilter(f.cityFilter || '');
+            }}
+          />
+        </div>
       </div>
 
       {/* Results count */}
