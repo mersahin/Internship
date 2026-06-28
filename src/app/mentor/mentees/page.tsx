@@ -7,6 +7,7 @@ import { Badge, StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
+import { ApplyLinkBox } from '@/components/ApplyLinkBox';
 
 interface MentorshipRelation {
   id: string;
@@ -57,6 +58,8 @@ export default function MenteesPage() {
           </Button>
         </Link>
       </div>
+
+      <ApplyLinkBox />
 
       {loading ? (
         <div className="text-center py-12 text-gray-400">{t.common.loading}</div>
