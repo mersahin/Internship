@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const limited = enforceRateLimit(request, 'reset', { limit: 10, windowMs: 15 * 60 * 1000 });
+  const limited = enforceRateLimit(request, 'reset', { limit: 20, windowMs: 15 * 60 * 1000 });
   if (limited) return limited;
 
   try {

@@ -48,6 +48,12 @@ export function enforceRateLimit(
   );
 }
 
+// Clear a key's counter (e.g. on a successful login, so good logins never
+// count toward the brute-force limit).
+export function clearRateLimit(key: string) {
+  buckets.delete(key);
+}
+
 // Occasionally drop expired buckets so the map can't grow unbounded.
 export function sweepRateLimitBuckets(now = Date.now()) {
   for (const [k, v] of buckets) if (v.resetAt <= now) buckets.delete(k);
