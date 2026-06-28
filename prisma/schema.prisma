@@ -87,6 +87,7 @@ model User {
   avatarFile              AvatarFile?
   notifications           Notification[]
   ownedProjects           Project[]                @relation("ProjectOwner")
+  availabilitySlots       AvailabilitySlot[]
   company                 Company?                 @relation("CompanyUsers", fields: [companyId], references: [id])
 }
 
@@ -203,6 +204,20 @@ model Project {
 
   @@index([ownerUserId])
   @@index([ownerCompanyId])
+}
+
+// A mentor's recurring weekly availability window.
+model AvailabilitySlot {
+  id        String   @id @default(cuid())
+  mentorId  String
+  weekday   Int // 0 = Sunday .. 6 = Saturday
+  startTime String // "HH:MM"
+  endTime   String // "HH:MM"
+  createdAt DateTime @default(now())
+
+  mentor User @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId])
 }
 
 // A cohort groups mentees/internships by intake period for comparison.

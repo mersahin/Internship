@@ -63,6 +63,9 @@ export default function RsvpPage({ params }: { params: Promise<{ token: string }
                   {meeting.meetLink}
                 </a>
               )}
+              <a href={`/api/calendar/${token}`} className="block text-sm text-blue-600 hover:underline mt-2">
+                {t.rsvp.addToCalendar}
+              </a>
               {done ? (
                 <div className="mt-6 flex flex-col items-center gap-2">
                   {done === 'ACCEPTED' ? (
