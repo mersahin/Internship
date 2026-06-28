@@ -404,6 +404,13 @@ const en = {
     noPublic: 'No public projects yet.',
     by: 'by',
   },
+  evaluation: {
+    title: 'Evaluation',
+    criteria: { technical: 'Technical', communication: 'Communication', reliability: 'Reliability', growth: 'Growth' },
+    comment: 'Comment (optional)',
+    add: 'Add evaluation',
+    none: 'No evaluations yet',
+  },
   messages: {
     title: 'Messages',
     listSubtitle: 'Your conversations with your mentor',
@@ -527,6 +534,7 @@ const en = {
     skills: 'Skills',
     cvUrl: 'CV URL',
     profileViews: 'Profile views',
+    skillLevels: 'Self-assess your skills (1–5)',
     makePublic: 'Make my profile public',
     makePublicHint: 'Shows a PII-free public profile (no email/phone) at a shareable link.',
     save: 'Save Changes',
@@ -983,6 +991,13 @@ const tr: Dict = {
     noPublic: 'Henüz herkese açık proje yok.',
     by: '·',
   },
+  evaluation: {
+    title: 'Değerlendirme',
+    criteria: { technical: 'Teknik', communication: 'İletişim', reliability: 'Güvenilirlik', growth: 'Gelişim' },
+    comment: 'Yorum (opsiyonel)',
+    add: 'Değerlendirme ekle',
+    none: 'Henüz değerlendirme yok',
+  },
   messages: {
     title: 'Mesajlar',
     listSubtitle: 'Mentorunla yazışmaların',
@@ -1106,6 +1121,7 @@ const tr: Dict = {
     skills: 'Yetenekler',
     cvUrl: 'CV Bağlantısı',
     profileViews: 'Profil görüntülenme',
+    skillLevels: 'Yeteneklerini öz-değerlendir (1–5)',
     makePublic: 'Profilimi herkese açık yap',
     makePublicHint: 'Paylaşılabilir bir bağlantıda PII içermeyen (e-posta/telefon yok) bir profil gösterir.',
     save: 'Değişiklikleri Kaydet',

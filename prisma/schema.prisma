@@ -54,6 +54,8 @@ model User {
   department     String?
   graduationYear Int?
   skills         Json      @default("[]")
+  // Mentee self-assessment: { "<skill>": 1..5 }
+  skillLevels    Json      @default("{}")
   cvUrl          String?
   avatarUrl      String?
   whatsapp       String?
@@ -231,6 +233,21 @@ model MentorshipRelation {
   statusChanges StatusChange[]
   meetings      Meeting[]
   messages      Message[]
+  evaluations   Evaluation[]
+}
+
+// A mentor's structured evaluation of a mentee within a mentorship.
+model Evaluation {
+  id         String   @id @default(cuid())
+  relationId String
+  authorId   String
+  scores     Json     @default("{}") // { criterion: 1..5 }
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  relation MentorshipRelation @relation(fields: [relationId], references: [id], onDelete: Cascade)
+
+  @@index([relationId])
 }
 
 model InteractionLog {

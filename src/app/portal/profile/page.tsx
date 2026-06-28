@@ -50,10 +50,13 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [fullName, setFullName] = useState('');
 
+  const [skillLevels, setSkillLevels] = useState<Record<string, number>>({});
+
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -70,6 +73,7 @@ export default function ProfilePage() {
           setProfileViews(user.profileViews || 0);
           setAvatarUrl(user.avatarUrl || null);
           setFullName(user.fullName || '');
+          setSkillLevels((user.skillLevels && typeof user.skillLevels === 'object') ? user.skillLevels : {});
           reset({
             fullName: user.fullName,
             phone: user.phone || '',
@@ -96,6 +100,10 @@ export default function ProfilePage() {
       const skillsArray = data.skills
         ? data.skills.split(',').map((s) => s.trim()).filter(Boolean)
         : [];
+      // Keep levels only for skills the user still lists.
+      const levels = Object.fromEntries(
+        skillsArray.filter((s) => skillLevels[s]).map((s) => [s, skillLevels[s]])
+      );
 
       const res = await fetch('/api/profile', {
         method: 'PUT',
@@ -103,6 +111,7 @@ export default function ProfilePage() {
         body: JSON.stringify({
           ...data,
           skills: skillsArray,
+          skillLevels: levels,
           graduationYear: data.graduationYear || null,
           cvUrl: data.cvUrl || null,
           publicProfile,
@@ -214,6 +223,30 @@ export default function ProfilePage() {
                 {...register('skills')}
                 error={errors.skills?.message}
               />
+              {(() => {
+                const list = (watch('skills') || '').split(',').map((s) => s.trim()).filter(Boolean);
+                if (list.length === 0) return null;
+                return (
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-2">{t.profileForm.skillLevels}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {list.map((s) => (
+                        <label key={s} className="flex items-center justify-between gap-2 text-sm bg-gray-50 rounded-lg px-3 py-1.5">
+                          <span className="truncate text-gray-700">{s}</span>
+                          <select
+                            value={skillLevels[s] ?? ''}
+                            onChange={(e) => setSkillLevels((prev) => ({ ...prev, [s]: Number(e.target.value) }))}
+                            className="rounded border border-gray-300 px-2 py-1 text-sm"
+                          >
+                            <option value="">–</option>
+                            {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               <Input
                 label={t.profileForm.cvUrl}
                 type="url"
