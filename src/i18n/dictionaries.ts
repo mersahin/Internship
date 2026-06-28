@@ -81,6 +81,11 @@ const en = {
     noInteractions: 'No interactions logged',
     resetPassword: 'Reset password',
     resetPwHint: 'A reset link was emailed to this user. You can also share it directly:',
+    from: 'From',
+    to: 'To',
+    date: 'Date',
+    addEntry: 'Add entry',
+    deleteEntry: 'Delete entry',
   },
   mentors: {
     title: 'Mentors',
@@ -360,6 +365,11 @@ const tr: Dict = {
     noInteractions: 'Henüz etkileşim yok',
     resetPassword: 'Parolayı sıfırla',
     resetPwHint: 'Bu kullanıcıya bir sıfırlama bağlantısı e-postalandı. İstersen doğrudan da paylaşabilirsin:',
+    from: 'Önceki',
+    to: 'Sonraki',
+    date: 'Tarih',
+    addEntry: 'Kayıt ekle',
+    deleteEntry: 'Kaydı sil',
   },
   mentors: {
     title: 'Mentorlar',

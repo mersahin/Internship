@@ -7,8 +7,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, ExternalLink, KeyRound } from 'lucide-react';
-import { pipelineLabel, pipelineOptions } from '@/lib/pipeline';
+import { ArrowLeft, ExternalLink, KeyRound, Trash2, Plus } from 'lucide-react';
+import { pipelineLabel, pipelineOptions, PIPELINE_STATUSES } from '@/lib/pipeline';
 import { useT, useLocale } from '@/i18n/client';
 
 interface Interaction { id: string; date: string; notes: string; type: string }
@@ -96,6 +96,43 @@ export default function AdminMenteeDetailPage() {
       setResetting(false);
     }
   }, [id]);
+
+  // Manual stage-history corrections (S9.4): add or remove audit entries.
+  const [histFrom, setHistFrom] = useState(PIPELINE_STATUSES[0] as string);
+  const [histTo, setHistTo] = useState(PIPELINE_STATUSES[0] as string);
+  const [histDate, setHistDate] = useState('');
+  const [histBusy, setHistBusy] = useState(false);
+
+  const addHistory = useCallback(
+    async (relationId: string) => {
+      setHistBusy(true);
+      try {
+        await fetch('/api/status-changes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            relationId,
+            fromStatus: histFrom,
+            toStatus: histTo,
+            ...(histDate ? { createdAt: new Date(histDate).toISOString() } : {}),
+          }),
+        });
+        setHistDate('');
+        await load();
+      } finally {
+        setHistBusy(false);
+      }
+    },
+    [histFrom, histTo, histDate, load]
+  );
+
+  const deleteHistory = useCallback(
+    async (changeId: string) => {
+      await fetch(`/api/status-changes/${changeId}`, { method: 'DELETE' });
+      await load();
+    },
+    [load]
+  );
 
   useEffect(() => {
     load();
@@ -202,15 +239,47 @@ export default function AdminMenteeDetailPage() {
                 ) : (
                   <ol className="space-y-2">
                     {rel.statusChanges.map((sc) => (
-                      <li key={sc.id} className="text-sm border-l-2 border-blue-100 pl-3">
-                        <span className="text-gray-400">{pipelineLabel(sc.fromStatus, locale)}</span>
-                        {' → '}
-                        <span className="font-medium">{pipelineLabel(sc.toStatus, locale)}</span>
-                        <span className="text-xs text-gray-400"> · {sc.changedBy.fullName} · {new Date(sc.createdAt).toLocaleDateString()}</span>
+                      <li key={sc.id} className="group flex items-center gap-2 text-sm border-l-2 border-blue-100 pl-3">
+                        <span className="flex-1 min-w-0">
+                          <span className="text-gray-400">{pipelineLabel(sc.fromStatus, locale)}</span>
+                          {' → '}
+                          <span className="font-medium">{pipelineLabel(sc.toStatus, locale)}</span>
+                          <span className="text-xs text-gray-400"> · {sc.changedBy.fullName} · {new Date(sc.createdAt).toLocaleDateString()}</span>
+                        </span>
+                        <button
+                          onClick={() => deleteHistory(sc.id)}
+                          title={t.candidateDetail.deleteEntry}
+                          className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </li>
                     ))}
                   </ol>
                 )}
+
+                {/* Manually add a correcting history entry */}
+                <div className="mt-3 flex flex-wrap items-end gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <div className="w-40">
+                    <Select label={t.candidateDetail.from} options={pipelineOptions(locale)} value={histFrom} onChange={(e) => setHistFrom(e.target.value)} />
+                  </div>
+                  <div className="w-40">
+                    <Select label={t.candidateDetail.to} options={pipelineOptions(locale)} value={histTo} onChange={(e) => setHistTo(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t.candidateDetail.date}</label>
+                    <input
+                      type="date"
+                      value={histDate}
+                      onChange={(e) => setHistDate(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <Button size="sm" loading={histBusy} onClick={() => addHistory(rel.id)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    {t.candidateDetail.addEntry}
+                  </Button>
+                </div>
               </div>
 
               <div>
