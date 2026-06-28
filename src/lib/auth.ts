@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { logActivity } from '@/lib/activity';
+import { rateLimit, clearRateLimit } from '@/lib/rateLimit';
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -23,6 +24,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email and password are required');
         }
 
+        const failKey = `login-fail:${credentials.email.toLowerCase()}`;
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
@@ -33,15 +36,20 @@ export const authOptions: NextAuthOptions = {
 
         // Generic error for both unknown email and wrong password so the
         // endpoint can't be used to discover which emails are registered.
+        // Only FAILED attempts count toward the brute-force limit.
         if (!user || !isPasswordValid) {
+          const within = rateLimit(failKey, { limit: 10, windowMs: 15 * 60 * 1000 });
           await logActivity({
             action: 'auth.login_failed',
             level: 'warning',
             actorEmail: credentials.email,
             actorId: user?.id ?? null,
           });
-          throw new Error('Invalid email or password');
+          throw new Error(within.ok ? 'Invalid email or password' : 'Too many attempts. Please try again later.');
         }
+
+        // Successful auth — reset the failure counter.
+        clearRateLimit(failKey);
 
         if (!user.isActive) {
           throw new Error('This account has been deactivated. Please contact an administrator.');
