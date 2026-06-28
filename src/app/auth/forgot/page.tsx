@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { GraduationCap } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { useT } from '@/i18n/client';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useT, useLocale } from '@/i18n/client';
 
 export default function ForgotPasswordPage() {
   const t = useT();
+  const locale = useLocale();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -62,11 +64,12 @@ export default function ForgotPasswordPage() {
             </form>
           )}
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            <Link href="/auth/signin" className="text-blue-600 hover:underline font-medium">
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <Link href="/auth/signin" className="text-sm text-blue-600 hover:underline font-medium">
               {t.auth.backToSignin}
             </Link>
-          </p>
+            <LanguageSwitcher current={locale} />
+          </div>
         </div>
       </div>
     </div>

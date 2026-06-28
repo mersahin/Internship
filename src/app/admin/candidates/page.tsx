@@ -32,13 +32,12 @@ interface Candidate {
   }[];
 }
 
-const graduationYearOptions = [
-  { value: '', label: 'All Years' },
-  ...Array.from({ length: 16 }, (_, i) => ({
-    value: String(2020 + i),
-    label: String(2020 + i),
-  })),
-];
+const MIN_GRAD_YEAR = 2010;
+const MAX_GRAD_YEAR = new Date().getFullYear() + 5;
+const gradYears = Array.from({ length: MAX_GRAD_YEAR - MIN_GRAD_YEAR + 1 }, (_, i) => ({
+  value: String(MIN_GRAD_YEAR + i),
+  label: String(MIN_GRAD_YEAR + i),
+}));
 
 export default function CandidatesPage() {
   const t = useT();
@@ -142,29 +141,29 @@ export default function CandidatesPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filters</span>
+          <span className="text-sm font-medium text-gray-700">{t.candidates.filters}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name, email, university..."
+              placeholder={t.candidates.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
             />
           </div>
           <Input
-            placeholder="Filter by skills (comma-separated)"
+            placeholder={t.candidates.skillsPlaceholder}
             value={skillFilter}
             onChange={(e) => setSkillFilter(e.target.value)}
           />
           <Select
-            options={graduationYearOptions}
+            options={[{ value: '', label: t.candidates.allYears }, ...gradYears]}
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
-            placeholder="All graduation years"
+            placeholder={t.candidates.allGradYears}
           />
           <Input
             placeholder={t.candidates.cityPlaceholder}
@@ -184,7 +183,7 @@ export default function CandidatesPage() {
               setCityFilter('');
             }}
           >
-            Clear filters
+            {t.candidates.clearFilters}
           </Button>
         )}
         <div className="mt-3 border-t border-gray-100 pt-3">
@@ -204,12 +203,12 @@ export default function CandidatesPage() {
 
       {/* Results count */}
       <p className="text-sm text-gray-500 mb-4">
-        {loading ? 'Loading...' : `${candidates.length} candidate${candidates.length !== 1 ? 's' : ''} found`}
+        {loading ? t.common.loading : `${candidates.length} ${t.candidates.found}`}
       </p>
 
       {/* Candidates Grid */}
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400">{t.common.loading}</div>
       ) : candidates.length === 0 ? (
         <Card className="text-center py-12">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
