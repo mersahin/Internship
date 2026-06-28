@@ -23,7 +23,7 @@ test('a mentee can change password from /account; weak passwords are rejected', 
   try {
     await signIn(page, email, oldPw, '/portal');
     await page.goto('/account');
-    await expect(page.getByRole('heading', { name: 'Account' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Account', exact: true })).toBeVisible({ timeout: 10_000 });
 
     // Weak password (no uppercase) is rejected by the server policy.
     await page.getByLabel(/Current password/).fill(oldPw);
