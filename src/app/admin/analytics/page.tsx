@@ -11,6 +11,7 @@ interface Analytics {
   totalRelations: number;
   conversionToHired: number;
   mentorWorkload: { id: string; fullName: string; active: number; hired: number }[];
+  projectWorkload: { name: string; interns: number }[];
   engagement: { interactions: number; meetings: number };
   rsvp: { ACCEPTED?: number; DECLINED?: number; PENDING?: number; acceptanceRate: number };
 }
@@ -105,6 +106,20 @@ export default function AdminAnalyticsPage() {
           )}
         </Card>
       </div>
+
+      {data.projectWorkload && data.projectWorkload.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader><CardTitle>{t.analytics.projects}</CardTitle></CardHeader>
+          <div className="divide-y divide-gray-50">
+            {data.projectWorkload.map((p) => (
+              <div key={p.name} className="flex items-center justify-between py-2 text-sm">
+                <span className="truncate">{p.name}</span>
+                <span className="text-gray-500 flex-shrink-0">{p.interns} {t.analytics.interns}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
