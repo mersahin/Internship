@@ -16,7 +16,7 @@ test('public application form creates a mentee linked to the mentor', async ({ p
     await expect(page.getByRole('heading', { name: 'Apply for mentorship' })).toBeVisible({ timeout: 10_000 });
 
     await page.getByLabel('Full name').fill('Walk In Applicant');
-    await page.getByLabel('Email', { exact: true }).fill(applicantEmail);
+    await page.getByLabel(/^Email/).fill(applicantEmail);
     const submitted = page.waitForResponse(
       (r) => r.url().endsWith('/api/apply') && r.request().method() === 'POST'
     );
