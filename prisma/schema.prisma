@@ -63,6 +63,8 @@ model User {
   emailVerified  Boolean   @default(true)
   // Admin can deactivate a user; inactive users cannot sign in.
   isActive       Boolean   @default(true)
+  // Opt-in: expose a limited, PII-free public profile at /p/[id].
+  publicProfile  Boolean   @default(false)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

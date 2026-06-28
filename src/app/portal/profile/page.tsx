@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [userId, setUserId] = useState('');
   const [initialCv, setInitialCv] = useState<string | null>(null);
+  const [publicProfile, setPublicProfile] = useState(false);
 
   const {
     register,
@@ -59,6 +60,7 @@ export default function ProfilePage() {
         if (user) {
           setUserId(user.id);
           setInitialCv(user.cvUrl || null);
+          setPublicProfile(!!user.publicProfile);
           reset({
             fullName: user.fullName,
             phone: user.phone || '',
@@ -94,6 +96,7 @@ export default function ProfilePage() {
           skills: skillsArray,
           graduationYear: data.graduationYear || null,
           cvUrl: data.cvUrl || null,
+          publicProfile,
         }),
       });
 
@@ -208,6 +211,28 @@ export default function ProfilePage() {
                   <CvManager targetUserId={userId} initialCvUrl={initialCv} />
                 </div>
               )}
+
+              <div className="border-t border-gray-100 pt-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={publicProfile}
+                    onChange={(e) => setPublicProfile(e.target.checked)}
+                  />
+                  {t.profileForm.makePublic}
+                </label>
+                <p className="text-xs text-gray-400 mt-1">{t.profileForm.makePublicHint}</p>
+                {publicProfile && userId && (
+                  <a
+                    href={`/p/${userId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline mt-1 inline-block"
+                  >
+                    /p/{userId}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 
