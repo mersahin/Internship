@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const [byStage, mentors, interactions, meetings, rsvpGroups] = await Promise.all([
+  const [byStage, mentors, interactions, meetings, rsvpGroups, projectRows] = await Promise.all([
     prisma.mentorshipRelation.groupBy({ by: ['pipelineStatus'], _count: { _all: true } }),
     prisma.user.findMany({
       where: { role: 'MENTOR' },
@@ -24,7 +24,13 @@ export async function GET() {
     prisma.interactionLog.count(),
     prisma.meeting.count(),
     prisma.meeting.groupBy({ by: ['rsvp'], _count: { _all: true } }),
+    prisma.project.findMany({ select: { name: true, _count: { select: { relations: true } } } }),
   ]);
+
+  const projectWorkload = projectRows
+    .map((p) => ({ name: p.name, interns: p._count.relations }))
+    .sort((a, b) => b.interns - a.interns)
+    .slice(0, 10);
 
   const funnel = Object.fromEntries(byStage.map((s) => [s.pipelineStatus, s._count._all]));
 
@@ -51,6 +57,7 @@ export async function GET() {
     totalRelations,
     conversionToHired,
     mentorWorkload,
+    projectWorkload,
     engagement: { interactions, meetings },
     rsvp: { ...rsvp, acceptanceRate: rsvpAcceptanceRate },
   });
