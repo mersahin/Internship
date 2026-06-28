@@ -38,7 +38,7 @@ export default async function CompanyLayout({ children }: { children: React.Reac
           </nav>
 
           <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center gap-3 mb-3 px-3">
+            <Link href="/account" title={t.account.nav} className="flex items-center gap-3 mb-3 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
                 <span className="text-indigo-700 font-semibold text-sm">{session.user.name?.[0] || 'C'}</span>
               </div>
@@ -46,7 +46,7 @@ export default async function CompanyLayout({ children }: { children: React.Reac
                 <p className="text-sm font-medium text-gray-900 truncate">{session.user.name}</p>
                 <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
               </div>
-            </div>
+            </Link>
             <Link
               href="/api/auth/signout"
               className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"

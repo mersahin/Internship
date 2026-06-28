@@ -370,6 +370,13 @@ const en = {
     updated: 'Account updated',
     reloginNote: 'Sign out and back in for changes to take full effect.',
     passwordMismatch: 'New passwords do not match',
+    passwordHint: 'At least 8 characters, with an uppercase and a lowercase letter.',
+    deleteSection: 'Delete account',
+    deleteWarning: 'Permanently delete your account and associated data. This cannot be undone.',
+    deleteButton: 'Delete my account',
+    deleteConfirm: 'Are you sure?',
+    deleteYes: 'Yes, delete',
+    deleteCancel: 'Cancel',
   },
 };
 
@@ -743,6 +750,13 @@ const tr: Dict = {
     updated: 'Hesap güncellendi',
     reloginNote: 'Değişikliklerin tam etkili olması için çıkış yapıp tekrar giriş yap.',
     passwordMismatch: 'Yeni parolalar eşleşmiyor',
+    passwordHint: 'En az 8 karakter, bir büyük ve bir küçük harf.',
+    deleteSection: 'Hesabı sil',
+    deleteWarning: 'Hesabını ve ilişkili verilerini kalıcı olarak siler. Bu işlem geri alınamaz.',
+    deleteButton: 'Hesabımı sil',
+    deleteConfirm: 'Emin misin?',
+    deleteYes: 'Evet, sil',
+    deleteCancel: 'Vazgeç',
   },
 };
 

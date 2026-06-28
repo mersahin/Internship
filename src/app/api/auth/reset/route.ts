@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { passwordSchema } from '@/lib/password';
 
 const schema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
 });
 
 // GET /api/auth/reset?token=... — lightweight validity check so the reset page

@@ -4,11 +4,12 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { passwordSchema } from '@/lib/password';
 
 const schema = z.object({
   email: z.string().email().optional(),
   currentPassword: z.string().optional(),
-  newPassword: z.string().min(8).optional(),
+  newPassword: passwordSchema.optional(),
 });
 
 export async function PUT(request: Request) {
@@ -54,6 +55,40 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: 'Account updated', emailChanged: !!data.email });
   } catch (error) {
     console.error('Account update error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// DELETE — self-service account deletion.
+export async function DELETE() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Don't allow deleting an account while impersonating it.
+    if (session.user.impersonatorId) {
+      return NextResponse.json({ error: 'Cannot delete an account while impersonating it' }, { status: 400 });
+    }
+
+    const id = session.user.id;
+
+    // The last remaining admin can't delete themselves.
+    if (session.user.role === 'ADMIN') {
+      const admins = await prisma.user.count({ where: { role: 'ADMIN' } });
+      if (admins <= 1) {
+        return NextResponse.json({ error: 'The last admin account cannot be deleted' }, { status: 400 });
+      }
+    }
+
+    // Remove rows that reference the user without a cascade, then the user
+    // (cvFile + tokens cascade via their onDelete: Cascade relations).
+    await prisma.mentorshipRelation.deleteMany({ where: { OR: [{ mentorId: id }, { menteeId: id }] } });
+    await prisma.statusChange.deleteMany({ where: { changedById: id } });
+    await prisma.user.delete({ where: { id } });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('Account delete error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

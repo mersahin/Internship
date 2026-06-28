@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { createEmailVerificationToken } from '@/lib/emailVerification';
 import { sendVerificationEmail } from '@/services/emailService';
+import { passwordSchema } from '@/lib/password';
 
 const registerSchema = z.object({
   token: z.string().optional(),
   email: z.string().email('Invalid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
   fullName: z.string().min(1, 'Full name is required'),
 });
 
