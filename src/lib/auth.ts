@@ -49,6 +49,42 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
+    // Impersonation sign-in. The caller's admin rights are checked in the
+    // admin-guarded API route that mints the single-use grant; here we only
+    // consume that grant, so there's no need to read the session cookie.
+    // A START grant becomes the target (carrying impersonatorId); a STOP grant
+    // returns to the admin (no impersonatorId).
+    CredentialsProvider({
+      id: 'impersonate',
+      name: 'impersonate',
+      credentials: { grant: { label: 'grant', type: 'text' } },
+      async authorize(credentials) {
+        const grantToken = credentials?.grant;
+        if (!grantToken) throw new Error('grant is required');
+
+        const grant = await prisma.impersonationGrant.findUnique({ where: { token: grantToken } });
+        if (!grant || grant.used || grant.expiresAt < new Date()) {
+          throw new Error('Invalid or expired grant');
+        }
+        await prisma.impersonationGrant.update({ where: { id: grant.id }, data: { used: true } });
+
+        const user = await prisma.user.findUnique({ where: { id: grant.targetId } });
+        if (!user) throw new Error('Target user not found');
+
+        const isStart = grant.kind === 'START';
+        const admin = isStart ? await prisma.user.findUnique({ where: { id: grant.adminId } }) : null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.fullName,
+          role: user.role,
+          emailVerified: user.emailVerified,
+          impersonatorId: isStart ? grant.adminId : undefined,
+          impersonatorName: isStart ? admin?.fullName ?? 'Admin' : undefined,
+        };
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user, trigger }) {
@@ -56,6 +92,11 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as unknown as { role: string }).role;
         token.emailVerified = (user as unknown as { emailVerified: boolean }).emailVerified;
+        // Set when starting impersonation, absent on a normal/stop sign-in —
+        // so this also clears it when returning to the original account.
+        const u = user as unknown as { impersonatorId?: string; impersonatorName?: string };
+        token.impersonatorId = u.impersonatorId ?? null;
+        token.impersonatorName = u.impersonatorName ?? null;
       }
       // On a client-side session update() (e.g. after changing email/profile),
       // re-read the user so the token — and thus the UI that reads the session,
@@ -76,6 +117,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.emailVerified = token.emailVerified as boolean;
+        session.user.impersonatorId = (token.impersonatorId as string) ?? null;
+        session.user.impersonatorName = (token.impersonatorName as string) ?? null;
         if (token.email) session.user.email = token.email as string;
         if (token.name) session.user.name = token.name as string;
       }
@@ -93,6 +136,8 @@ declare module 'next-auth' {
       image?: string | null;
       role: string;
       emailVerified?: boolean;
+      impersonatorId?: string | null;
+      impersonatorName?: string | null;
     };
   }
 }
