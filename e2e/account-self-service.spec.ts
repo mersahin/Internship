@@ -1,0 +1,68 @@
+import { test, expect } from '@playwright/test';
+import bcrypt from 'bcryptjs';
+import { prisma, seedUser, cleanupByEmail, uniqueEmail } from './helpers/db';
+
+test.afterAll(async () => {
+  await prisma.$disconnect();
+});
+
+async function signIn(page: import('@playwright/test').Page, email: string, pw: string, home: string) {
+  await page.goto('/auth/signin');
+  await page.fill('input[type="email"], input[name="email"]', email);
+  await page.fill('input[type="password"]', pw);
+  await page.click('button[type="submit"]');
+  await page.waitForURL((u) => u.pathname.startsWith(home), { timeout: 20_000 });
+}
+
+test('a mentee can change password from /account; weak passwords are rejected', async ({ page }) => {
+  const email = uniqueEmail('acctmentee');
+  const oldPw = 'OldPass123!';
+  const newPw = 'FreshPass456';
+  const user = await seedUser(email, oldPw, 'MENTEE', 'Acct Mentee');
+
+  try {
+    await signIn(page, email, oldPw, '/portal');
+    await page.goto('/account');
+    await expect(page.getByRole('heading', { name: 'Account', exact: true })).toBeVisible({ timeout: 10_000 });
+
+    // Weak password (no uppercase) is rejected by the server policy.
+    await page.getByLabel(/Current password/).fill(oldPw);
+    await page.getByLabel(/^New password/).fill('weakpass');
+    await page.getByLabel(/Confirm new password/).fill('weakpass');
+    await page.getByRole('button', { name: 'Update password' }).click();
+    await expect(page.getByText(/uppercase|at least 8/i)).toBeVisible({ timeout: 10_000 });
+
+    // Valid password succeeds.
+    await page.getByLabel(/Current password/).fill(oldPw);
+    await page.getByLabel(/^New password/).fill(newPw);
+    await page.getByLabel(/Confirm new password/).fill(newPw);
+    const done = page.waitForResponse((r) => r.url().includes('/api/account') && r.request().method() === 'PUT');
+    await page.getByRole('button', { name: 'Update password' }).click();
+    await done;
+    await page.waitForTimeout(400);
+
+    const fresh = await prisma.user.findUnique({ where: { id: user.id } });
+    expect(await bcrypt.compare(newPw, fresh!.password)).toBe(true);
+  } finally {
+    await cleanupByEmail(email);
+  }
+});
+
+test('a user can delete their own account', async ({ page }) => {
+  const email = uniqueEmail('delmentee');
+  const pw = 'DeletePass123';
+  const user = await seedUser(email, pw, 'MENTEE', 'Delete Me');
+
+  try {
+    await signIn(page, email, pw, '/portal');
+    await page.goto('/account');
+    await page.getByRole('button', { name: 'Delete my account' }).click();
+    const done = page.waitForResponse((r) => r.url().includes('/api/account') && r.request().method() === 'DELETE');
+    await page.getByRole('button', { name: 'Yes, delete' }).click();
+    await done;
+
+    await expect.poll(async () => prisma.user.findUnique({ where: { id: user.id } })).toBeNull();
+  } finally {
+    await cleanupByEmail(email);
+  }
+});
