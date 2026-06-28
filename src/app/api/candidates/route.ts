@@ -18,6 +18,7 @@ export async function GET(request: Request) {
     const pipelineStatus = searchParams.get('status');
     const city = searchParams.get('city');
     const company = searchParams.get('company');
+    const project = searchParams.get('project');
 
     const where: Record<string, unknown> = {
       role: 'MENTEE',
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
     const relSome: Record<string, unknown> = {};
     if (pipelineStatus) relSome.pipelineStatus = pipelineStatus;
     if (company) relSome.company = { name: company };
+    if (project) relSome.project = { name: { contains: project } };
     if (Object.keys(relSome).length) where.menteeRelations = { some: relSome };
     if (city) where.city = { contains: city };
 
@@ -70,6 +72,7 @@ export async function GET(request: Request) {
           include: {
             mentor: { select: { id: true, fullName: true } },
             company: { select: { id: true, name: true } },
+            project: { select: { id: true, name: true } },
           },
         },
       },

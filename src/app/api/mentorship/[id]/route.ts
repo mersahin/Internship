@@ -12,6 +12,7 @@ const updateRelationSchema = z.object({
   status: z.enum(['ACTIVE', 'COMPLETED']).optional(),
   pipelineStatus: z.enum(PIPELINE_STATUSES).optional(),
   companyId: z.string().nullable().optional(),
+  projectId: z.string().nullable().optional(),
 });
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -50,6 +50,7 @@ export default function CandidatesPage() {
   const [yearFilter, setYearFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [cityFilter, setCityFilter] = useState('');
+  const [projectFilter, setProjectFilter] = useState('');
   const [error, setError] = useState('');
 
   const COLS = ['Name', 'Email', 'Phone', 'WhatsApp', 'City', 'University', 'Department', 'Graduation', 'Skills', 'Stage', 'Project', 'Mentor'];
@@ -94,6 +95,7 @@ export default function CandidatesPage() {
       if (search) params.set('search', search);
       if (statusFilter) params.set('status', statusFilter);
       if (cityFilter) params.set('city', cityFilter);
+      if (projectFilter) params.set('project', projectFilter);
 
       const res = await fetch(`/api/candidates?${params}`);
       const data = await res.json();
@@ -103,7 +105,7 @@ export default function CandidatesPage() {
     } finally {
       setLoading(false);
     }
-  }, [skillFilter, yearFilter, search, statusFilter, cityFilter]);
+  }, [skillFilter, yearFilter, search, statusFilter, cityFilter, projectFilter]);
 
   useEffect(() => {
     const timeout = setTimeout(fetchCandidates, 300);
@@ -184,8 +186,13 @@ export default function CandidatesPage() {
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
           />
+          <Input
+            placeholder={t.candidates.projectPlaceholder}
+            value={projectFilter}
+            onChange={(e) => setProjectFilter(e.target.value)}
+          />
         </div>
-        {(search || skillFilter || yearFilter || cityFilter) && (
+        {(search || skillFilter || yearFilter || cityFilter || projectFilter) && (
           <Button
             variant="ghost"
             size="sm"
@@ -195,6 +202,7 @@ export default function CandidatesPage() {
               setSkillFilter('');
               setYearFilter('');
               setCityFilter('');
+              setProjectFilter('');
             }}
           >
             {t.candidates.clearFilters}
@@ -203,13 +211,14 @@ export default function CandidatesPage() {
         <div className="mt-3 border-t border-gray-100 pt-3">
           <SavedViews
             storageKey="candidate-views"
-            current={{ search, skillFilter, yearFilter, statusFilter, cityFilter }}
+            current={{ search, skillFilter, yearFilter, statusFilter, cityFilter, projectFilter }}
             onApply={(f) => {
               setSearch(f.search || '');
               setSkillFilter(f.skillFilter || '');
               setYearFilter(f.yearFilter || '');
               setStatusFilter(f.statusFilter || '');
               setCityFilter(f.cityFilter || '');
+              setProjectFilter(f.projectFilter || '');
             }}
           />
         </div>
