@@ -50,7 +50,12 @@ test('adding a mentee with an email yields a set-password link the mentee can us
     await done;
     await page.waitForURL((u) => u.pathname.startsWith('/auth/signin'), { timeout: 20_000 });
 
+    // Drop the mentor's still-active session before signing in as the mentee,
+    // otherwise /auth/signin redirects the authenticated mentor away.
+    await page.context().clearCookies();
+
     // Mentee can now sign in with their chosen password → lands on the portal.
+    await page.goto('/auth/signin');
     await page.fill('input[type="email"], input[name="email"]', menteeEmail);
     await page.fill('input[type="password"]', menteePw);
     await page.click('button[type="submit"]');
