@@ -16,6 +16,7 @@ const updateProfileSchema = z.object({
   department: z.string().optional(),
   graduationYear: z.number().int().nullable().optional(),
   skills: z.array(z.string()).optional(),
+  skillLevels: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
   cvUrl: z.string().url().or(z.literal('')).nullable().optional(),
   publicProfile: z.boolean().optional(),
 });
@@ -44,6 +45,7 @@ export async function GET() {
         department: true,
         graduationYear: true,
         skills: true,
+        skillLevels: true,
         cvUrl: true,
         avatarUrl: true,
         publicProfile: true,
@@ -106,6 +108,7 @@ export async function PUT(request: Request) {
         department: true,
         graduationYear: true,
         skills: true,
+        skillLevels: true,
         cvUrl: true,
         publicProfile: true,
         updatedAt: true,

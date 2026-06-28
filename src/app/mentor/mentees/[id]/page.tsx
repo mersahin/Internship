@@ -11,6 +11,7 @@ import { ArrowLeft, Plus, Trash2, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { pipelineOptions, pipelineLabel } from '@/lib/pipeline';
 import { useT, useLocale } from '@/i18n/client';
+import { EvaluationPanel } from '@/components/EvaluationPanel';
 
 interface InteractionLog {
   id: string;
@@ -356,6 +357,10 @@ export default function MenteeDetailPage() {
             ))}
           </div>
         </Card>
+
+        <div className="lg:col-span-2">
+          <EvaluationPanel relationId={id} />
+        </div>
       </div>
     </div>
   );
