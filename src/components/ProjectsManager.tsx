@@ -70,18 +70,15 @@ export function ProjectsManager({ isAdmin }: { isAdmin: boolean }) {
         status: form.status,
         isPublic: form.isPublic,
       };
+      // Admin sets/changes ownership (create or transfer-on-edit), preserving
+      // the "exactly one owner" invariant.
       if (isAdmin) {
         payload.ownerType = ownerType;
         if (ownerType === 'COMPANY') payload.ownerCompanyId = ownerCompanyId;
         else if (ownerType === 'MENTOR') payload.ownerUserId = ownerUserId;
-        // ADMIN owner → handled server-side via current admin when creating; on edit we send ownerUserId if chosen
+        else payload.ownerUserId = ownerUserId || meId; // ADMIN → self by default
       }
       const url = editingId ? `/api/projects/${editingId}` : '/api/projects';
-      // For admin creating an ADMIN-owned project, default ownerUserId to none → server requires it,
-      // so send a self marker: the API resolves ADMIN with ownerUserId. We pass it from a hidden "me".
-      if (isAdmin && ownerType === 'ADMIN' && !editingId) {
-        payload.ownerUserId = ownerUserId || meId;
-      }
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,6 +104,9 @@ export function ProjectsManager({ isAdmin }: { isAdmin: boolean }) {
       name: p.name, description: p.description ?? '', technologies: p.technologies.join(', '),
       repoUrl: p.repoUrl ?? '', demoUrl: p.demoUrl ?? '', status: p.status, isPublic: p.isPublic,
     });
+    setOwnerType(p.ownerType);
+    setOwnerUserId(p.ownerUser?.id ?? '');
+    setOwnerCompanyId(p.ownerCompany?.id ?? '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -149,8 +149,9 @@ export function ProjectsManager({ isAdmin }: { isAdmin: boolean }) {
             </label>
           </div>
 
-          {isAdmin && !editingId && (
+          {isAdmin && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-gray-100 pt-3">
+              {editingId && <p className="sm:col-span-2 text-xs text-gray-500">{t.projects.transferHint}</p>}
               <Select label={t.projects.owner} value={ownerType} onChange={(e) => setOwnerType(e.target.value)}
                 options={[{ value: 'ADMIN', label: t.projects.ownerAdmin }, { value: 'MENTOR', label: t.projects.ownerMentor }, { value: 'COMPANY', label: t.projects.ownerCompany }]} />
               {ownerType === 'MENTOR' && (

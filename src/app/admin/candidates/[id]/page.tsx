@@ -22,6 +22,7 @@ interface Relation {
   startDate: string;
   mentor: { fullName: string; email: string };
   company: { name: string; industry?: string } | null;
+  project: { id: string; name: string } | null;
   interactions: Interaction[];
   statusChanges: StatusChange[];
 }
@@ -62,6 +63,7 @@ export default function AdminMenteeDetailPage() {
   const [resetting, setResetting] = useState(false);
   const [resetUrl, setResetUrl] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<{ id: string; fullName: string; overlap: number; activeCount: number }[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/users/${id}`);
@@ -80,6 +82,23 @@ export default function AdminMenteeDetailPage() {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pipelineStatus }),
+        });
+        await load();
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load]
+  );
+
+  const changeProject = useCallback(
+    async (relationId: string, projectId: string) => {
+      setSaving(true);
+      try {
+        await fetch(`/api/mentorship/${relationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId: projectId || null }),
         });
         await load();
       } finally {
@@ -145,6 +164,10 @@ export default function AdminMenteeDetailPage() {
     fetch(`/api/admin/suggest-mentors?menteeId=${id}`)
       .then((r) => (r.ok ? r.json() : { suggestions: [] }))
       .then((d) => setSuggestions(d.suggestions ?? []))
+      .catch(() => {});
+    fetch('/api/projects')
+      .then((r) => (r.ok ? r.json() : { projects: [] }))
+      .then((d) => setProjects(d.projects ?? []))
       .catch(() => {});
   }, [id]);
 
@@ -230,13 +253,20 @@ export default function AdminMenteeDetailPage() {
                 {rel.company && <div><span className="text-gray-500">{t.candidateDetail.company}:</span> <span className="font-medium">{rel.company.name}</span></div>}
               </div>
 
-              <div className="max-w-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
                 <Select
                   label={t.candidateDetail.stage}
                   options={pipelineOptions(locale)}
                   value={rel.pipelineStatus}
                   disabled={saving}
                   onChange={(e) => changeStage(rel.id, e.target.value)}
+                />
+                <Select
+                  label={t.candidateDetail.project}
+                  options={[{ value: '', label: t.candidateDetail.noProject }, ...projects.map((p) => ({ value: p.id, label: p.name }))]}
+                  value={rel.project?.id ?? ''}
+                  disabled={saving}
+                  onChange={(e) => changeProject(rel.id, e.target.value)}
                 />
               </div>
 

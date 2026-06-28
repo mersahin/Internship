@@ -8,6 +8,7 @@ const createRelationSchema = z.object({
   mentorId: z.string().min(1),
   menteeId: z.string().min(1),
   companyId: z.string().optional(),
+  projectId: z.string().optional(),
   startDate: z.string().optional(),
 });
 
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { mentorId, menteeId, companyId, startDate } = parsed.data;
+    const { mentorId, menteeId, companyId, projectId, startDate } = parsed.data;
 
     const [mentor, mentee] = await Promise.all([
       prisma.user.findUnique({ where: { id: mentorId } }),
@@ -113,12 +114,14 @@ export async function POST(request: Request) {
         mentorId,
         menteeId,
         companyId: companyId || null,
+        projectId: projectId || null,
         startDate: startDate ? new Date(startDate) : new Date(),
       },
       include: {
         mentor: { select: { id: true, fullName: true, email: true } },
         mentee: { select: { id: true, fullName: true, email: true } },
         company: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true } },
       },
     });
 
