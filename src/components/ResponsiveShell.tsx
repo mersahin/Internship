@@ -11,9 +11,11 @@ import { NotificationBell } from '@/components/NotificationBell';
 export function ResponsiveShell({
   sidebar,
   children,
+  headerExtra,
 }: {
   sidebar: React.ReactNode;
   children: React.ReactNode;
+  headerExtra?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -55,8 +57,9 @@ export function ResponsiveShell({
       </div>
 
       <main className="flex-1 overflow-auto min-w-0">
-        {/* Desktop-only top strip for the notification bell */}
-        <div className="hidden lg:flex justify-end px-8 pt-4">
+        {/* Desktop-only top strip for search + notifications */}
+        <div className="hidden lg:flex items-center justify-end gap-3 px-8 pt-4">
+          {headerExtra}
           <NotificationBell />
         </div>
         <div className="p-4 lg:p-8 lg:pt-2">

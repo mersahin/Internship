@@ -293,6 +293,16 @@ const en = {
     title: 'Notifications',
     none: 'No notifications',
   },
+  search: {
+    placeholder: 'Search people, companies…',
+    company: 'Company',
+  },
+  savedViews: {
+    save: 'Save view',
+    saved: 'Saved views',
+    namePrompt: 'Name this view',
+    none: 'No saved views',
+  },
   activity: {
     title: 'Activity log',
     subtitle: 'Auth events and key actions across the app',
@@ -706,6 +716,16 @@ const tr: Dict = {
   notifications: {
     title: 'Bildirimler',
     none: 'Bildirim yok',
+  },
+  search: {
+    placeholder: 'Kişi, şirket ara…',
+    company: 'Şirket',
+  },
+  savedViews: {
+    save: 'Görünümü kaydet',
+    saved: 'Kayıtlı görünümler',
+    namePrompt: 'Bu görünüme ad ver',
+    none: 'Kayıtlı görünüm yok',
   },
   activity: {
     title: 'Aktivite günlüğü',
