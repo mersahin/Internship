@@ -126,7 +126,7 @@ export function AccountSettings() {
           <CardHeader><CardTitle>{t.account.emailSection}</CardTitle></CardHeader>
           <form onSubmit={submitEmail} className="space-y-4">
             <Input label={t.account.email} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <Input label={t.account.currentPassword} type="password" autoComplete="current-password" hint={t.account.emailPwHint} value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} required />
+            <Input id="email-current-password" label={t.account.currentPassword} type="password" autoComplete="current-password" hint={t.account.emailPwHint} value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} required />
             <Button type="submit" loading={savingEmail}>{t.account.updateEmail}</Button>
           </form>
         </Card>
@@ -159,7 +159,7 @@ export function AccountSettings() {
         {confirmDelete ? (
           <div className="space-y-3 max-w-sm">
             <p className="text-sm text-red-700">{t.account.deleteConfirm}</p>
-            <Input label={t.account.currentPassword} type="password" autoComplete="current-password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} required />
+            <Input id="delete-current-password" label={t.account.currentPassword} type="password" autoComplete="current-password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} required />
             <div className="flex items-center gap-2">
               <Button variant="danger" loading={deleting} disabled={!deletePassword} onClick={deleteAccount}>{t.account.deleteYes}</Button>
               <Button variant="outline" onClick={() => { setConfirmDelete(false); setDeletePassword(''); }}>{t.account.deleteCancel}</Button>
