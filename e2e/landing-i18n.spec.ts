@@ -4,7 +4,7 @@ test('landing page shows features, pipeline and CTAs in English by default', asy
   await page.goto('/');
   await expect(page.getByRole('heading', { name: /Connect Talent with/i })).toBeVisible();
   await expect(page.getByText('Everything you need')).toBeVisible();
-  await expect(page.getByText('Pipeline tracking')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pipeline tracking' })).toBeVisible();
   // pipeline diagram stage label
   await expect(page.getByText('Internship', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /Get Started/i }).first()).toBeVisible();
