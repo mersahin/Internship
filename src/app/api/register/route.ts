@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const emailVerified = !!token;
 
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, fullName, role, skills: [], emailVerified },
+      data: { email, password: hashedPassword, fullName, role, skills: [], emailVerified, consentAt: new Date() },
       select: { id: true, email: true, fullName: true, role: true, createdAt: true },
     });
 

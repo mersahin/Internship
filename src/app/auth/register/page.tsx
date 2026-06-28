@@ -138,6 +138,10 @@ function RegisterForm() {
             <Button type="submit" className="w-full" size="lg" loading={loading}>
               {t.auth.createAccount}
             </Button>
+            <p className="text-xs text-gray-400 text-center">
+              {t.auth.consentNote}{' '}
+              <Link href="/privacy" className="text-blue-600 hover:underline">{t.auth.privacyLink}</Link>
+            </p>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">

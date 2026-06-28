@@ -134,6 +134,17 @@ export function AccountSettings() {
         </Card>
       </div>
 
+      <Card className="mt-6 max-w-4xl">
+        <CardHeader><CardTitle>{t.account.dataSection}</CardTitle></CardHeader>
+        <p className="text-sm text-gray-600 mb-4">{t.account.dataHint}</p>
+        <a
+          href="/api/account/export"
+          className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          {t.account.exportData}
+        </a>
+      </Card>
+
       <Card className="mt-6 max-w-4xl border-red-200">
         <CardHeader><CardTitle>{t.account.deleteSection}</CardTitle></CardHeader>
         <p className="text-sm text-gray-600 mb-4">{t.account.deleteWarning}</p>
