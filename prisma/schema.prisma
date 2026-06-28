@@ -84,6 +84,7 @@ model User {
   cvFile                  CvFile?
   avatarFile              AvatarFile?
   notifications           Notification[]
+  ownedProjects           Project[]                @relation("ProjectOwner")
   company                 Company?                 @relation("CompanyUsers", fields: [companyId], references: [id])
 }
 
@@ -160,6 +161,46 @@ model Company {
   needs       CompanyNeed[]
   mentorships MentorshipRelation[]
   users       User[]               @relation("CompanyUsers")
+  projects    Project[]            @relation("CompanyProjects")
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+// A project must be owned by exactly one of: an admin, a mentor, or a company.
+enum ProjectOwnerType {
+  ADMIN
+  MENTOR
+  COMPANY
+}
+
+// An internship project. May belong to a company (owner=COMPANY) or be a
+// community project owned by an admin/mentor. Mentees are assigned via
+// MentorshipRelation.projectId. Ownership is transferable (audited).
+model Project {
+  id             String           @id @default(cuid())
+  name           String
+  description    String?          @db.Text
+  technologies   Json             @default("[]")
+  repoUrl        String?
+  demoUrl        String?
+  status         ProjectStatus    @default(ACTIVE)
+  isPublic       Boolean          @default(false)
+  ownerType      ProjectOwnerType
+  ownerUserId    String?
+  ownerCompanyId String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  ownerUser    User?                @relation("ProjectOwner", fields: [ownerUserId], references: [id])
+  ownerCompany Company?             @relation("CompanyProjects", fields: [ownerCompanyId], references: [id])
+  relations    MentorshipRelation[]
+
+  @@index([ownerUserId])
+  @@index([ownerCompanyId])
 }
 
 model CompanyNeed {
@@ -177,6 +218,7 @@ model MentorshipRelation {
   mentorId       String
   menteeId       String
   companyId      String?
+  projectId      String?
   startDate      DateTime         @default(now())
   status         MentorshipStatus @default(ACTIVE)
   pipelineStatus PipelineStatus   @default(APPLICATION_100)
@@ -184,6 +226,7 @@ model MentorshipRelation {
   mentor        User             @relation("MentorRelations", fields: [mentorId], references: [id])
   mentee        User             @relation("MenteeRelations", fields: [menteeId], references: [id])
   company       Company?         @relation(fields: [companyId], references: [id])
+  project       Project?         @relation(fields: [projectId], references: [id])
   interactions  InteractionLog[]
   statusChanges StatusChange[]
   meetings      Meeting[]

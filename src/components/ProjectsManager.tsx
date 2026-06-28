@@ -1,0 +1,217 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
+import { Badge } from '@/components/ui/Badge';
+import { Github, ExternalLink, Trash2, Pencil } from 'lucide-react';
+import { useT } from '@/i18n/client';
+
+interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  technologies: string[];
+  repoUrl: string | null;
+  demoUrl: string | null;
+  status: 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
+  isPublic: boolean;
+  ownerType: 'ADMIN' | 'MENTOR' | 'COMPANY';
+  ownerUser?: { id: string; fullName: string } | null;
+  ownerCompany?: { id: string; name: string } | null;
+  _count?: { relations: number };
+}
+
+const STATUS_VARIANT = { ACTIVE: 'success', COMPLETED: 'info', ARCHIVED: 'default' } as const;
+const blank = { name: '', description: '', technologies: '', repoUrl: '', demoUrl: '', status: 'ACTIVE', isPublic: false };
+
+export function ProjectsManager({ isAdmin }: { isAdmin: boolean }) {
+  const t = useT();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ ...blank });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [mentors, setMentors] = useState<{ id: string; fullName: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [ownerType, setOwnerType] = useState('ADMIN');
+  const [ownerUserId, setOwnerUserId] = useState('');
+  const [ownerCompanyId, setOwnerCompanyId] = useState('');
+
+  const load = useCallback(async () => {
+    const res = await fetch('/api/projects');
+    const d = await res.json();
+    setProjects(d.projects ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetch('/api/users').then((r) => r.json()).then((d) => setMentors((d.users ?? []).filter((u: { role: string }) => u.role === 'MENTOR')));
+    fetch('/api/companies').then((r) => r.json()).then((d) => setCompanies(d.companies ?? []));
+  }, [isAdmin]);
+
+  const reset = () => { setForm({ ...blank }); setEditingId(null); setOwnerType('ADMIN'); setOwnerUserId(''); setOwnerCompanyId(''); };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true); setError('');
+    try {
+      const payload: Record<string, unknown> = {
+        name: form.name,
+        description: form.description,
+        technologies: form.technologies.split(',').map((s) => s.trim()).filter(Boolean),
+        repoUrl: form.repoUrl,
+        demoUrl: form.demoUrl,
+        status: form.status,
+        isPublic: form.isPublic,
+      };
+      if (isAdmin) {
+        payload.ownerType = ownerType;
+        if (ownerType === 'COMPANY') payload.ownerCompanyId = ownerCompanyId;
+        else if (ownerType === 'MENTOR') payload.ownerUserId = ownerUserId;
+        // ADMIN owner → handled server-side via current admin when creating; on edit we send ownerUserId if chosen
+      }
+      const url = editingId ? `/api/projects/${editingId}` : '/api/projects';
+      // For admin creating an ADMIN-owned project, default ownerUserId to none → server requires it,
+      // so send a self marker: the API resolves ADMIN with ownerUserId. We pass it from a hidden "me".
+      if (isAdmin && ownerType === 'ADMIN' && !editingId) {
+        payload.ownerUserId = ownerUserId || meId;
+      }
+      const res = await fetch(url, {
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      reset();
+      await load();
+    } catch (e2) {
+      setError(e2 instanceof Error ? e2.message : 'Failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const [meId, setMeId] = useState('');
+  useEffect(() => { fetch('/api/profile').then((r) => r.json()).then(({ user }) => user && setMeId(user.id)); }, []);
+
+  const edit = (p: Project) => {
+    setEditingId(p.id);
+    setForm({
+      name: p.name, description: p.description ?? '', technologies: p.technologies.join(', '),
+      repoUrl: p.repoUrl ?? '', demoUrl: p.demoUrl ?? '', status: p.status, isPublic: p.isPublic,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const remove = async (id: string) => {
+    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+    await load();
+  };
+
+  const ownerLabel = (p: Project) =>
+    p.ownerType === 'COMPANY' ? p.ownerCompany?.name : p.ownerUser?.fullName;
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">{t.projects.title}</h1>
+        <p className="text-gray-500 mt-1">{t.projects.subtitle}</p>
+      </div>
+
+      <Card className="mb-6 max-w-3xl">
+        <CardHeader><CardTitle>{editingId ? t.projects.editProject : t.projects.newProject}</CardTitle></CardHeader>
+        {error && <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
+        <form onSubmit={submit} className="space-y-3">
+          <Input label={t.projects.name} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.projects.description}</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3} className="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm" />
+          </div>
+          <Input label={t.projects.technologies} hint={t.projects.techHint} value={form.technologies} onChange={(e) => setForm({ ...form, technologies: e.target.value })} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input label={t.projects.repoUrl} type="url" placeholder="https://github.com/..." value={form.repoUrl} onChange={(e) => setForm({ ...form, repoUrl: e.target.value })} />
+            <Input label={t.projects.demoUrl} type="url" placeholder="https://..." value={form.demoUrl} onChange={(e) => setForm({ ...form, demoUrl: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select label={t.projects.status} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
+              options={[{ value: 'ACTIVE', label: t.projects.active }, { value: 'COMPLETED', label: t.projects.completed }, { value: 'ARCHIVED', label: t.projects.archived }]} />
+            <label className="flex items-center gap-2 text-sm text-gray-700 mt-7">
+              <input type="checkbox" checked={form.isPublic} onChange={(e) => setForm({ ...form, isPublic: e.target.checked })} />
+              {t.projects.isPublic}
+            </label>
+          </div>
+
+          {isAdmin && !editingId && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-gray-100 pt-3">
+              <Select label={t.projects.owner} value={ownerType} onChange={(e) => setOwnerType(e.target.value)}
+                options={[{ value: 'ADMIN', label: t.projects.ownerAdmin }, { value: 'MENTOR', label: t.projects.ownerMentor }, { value: 'COMPANY', label: t.projects.ownerCompany }]} />
+              {ownerType === 'MENTOR' && (
+                <Select label={t.projects.ownerMentor} value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}
+                  options={[{ value: '', label: '—' }, ...mentors.map((m) => ({ value: m.id, label: m.fullName }))]} />
+              )}
+              {ownerType === 'COMPANY' && (
+                <Select label={t.projects.ownerCompany} value={ownerCompanyId} onChange={(e) => setOwnerCompanyId(e.target.value)}
+                  options={[{ value: '', label: '—' }, ...companies.map((c) => ({ value: c.id, label: c.name }))]} />
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button type="submit" loading={saving}>{editingId ? t.projects.save : t.projects.create}</Button>
+            {editingId && <Button type="button" variant="outline" onClick={reset}>{t.common.cancel}</Button>}
+          </div>
+        </form>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>{t.projects.allProjects} ({projects.length})</CardTitle></CardHeader>
+        {loading ? (
+          <p className="text-center py-10 text-gray-400">{t.common.loading}</p>
+        ) : projects.length === 0 ? (
+          <p className="text-center py-10 text-gray-400">{t.projects.none}</p>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {projects.map((p) => (
+              <div key={p.id} className="py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-gray-900">{p.name}</span>
+                      <Badge variant={STATUS_VARIANT[p.status]}>{t.projects[p.status.toLowerCase() as 'active' | 'completed' | 'archived']}</Badge>
+                      {p.isPublic && <Badge variant="purple">{t.projects.public}</Badge>}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {t.projects.owner}: {ownerLabel(p)} · {p._count?.relations ?? 0} {t.projects.members}
+                    </p>
+                    {p.description && <p className="text-sm text-gray-600 mt-1 line-clamp-2">{p.description}</p>}
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {p.technologies.map((tech) => (
+                        <span key={tech} className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">{tech}</span>
+                      ))}
+                    </div>
+                    <div className="flex gap-3 mt-2 text-xs">
+                      {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-gray-600 hover:text-blue-600"><Github className="h-3.5 w-3.5" />{t.projects.repo}</a>}
+                      {p.demoUrl && <a href={p.demoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-gray-600 hover:text-blue-600"><ExternalLink className="h-3.5 w-3.5" />{t.projects.demo}</a>}
+                    </div>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => edit(p)} aria-label={t.projects.editProject} className="p-2 text-gray-400 hover:text-blue-600"><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => remove(p.id)} aria-label={t.projects.deleteProject} className="p-2 text-gray-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
