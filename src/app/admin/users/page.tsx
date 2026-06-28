@@ -14,16 +14,19 @@ interface AdminUser {
   id: string;
   fullName: string;
   email: string;
-  role: 'ADMIN' | 'MENTOR' | 'MENTEE';
+  role: 'ADMIN' | 'MENTOR' | 'MENTEE' | 'COMPANY';
   isActive: boolean;
   emailVerified: boolean;
 }
 
-const ROLE_VARIANT: Record<string, 'info' | 'success' | 'warning'> = {
+const ROLE_VARIANT: Record<string, 'info' | 'success' | 'warning' | 'purple'> = {
   ADMIN: 'warning',
   MENTOR: 'success',
   MENTEE: 'info',
+  COMPANY: 'purple',
 };
+
+type RoleLabel = 'admin' | 'mentor' | 'mentee' | 'company';
 
 export default function AdminUsersPage() {
   const t = useT();
@@ -31,7 +34,7 @@ export default function AdminUsersPage() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'ALL' | 'ADMIN' | 'MENTOR' | 'MENTEE'>('ALL');
+  const [filter, setFilter] = useState<'ALL' | 'ADMIN' | 'MENTOR' | 'MENTEE' | 'COMPANY'>('ALL');
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const loginAs = async (u: AdminUser) => {
@@ -93,7 +96,7 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {(['ALL', 'ADMIN', 'MENTOR', 'MENTEE'] as const).map((r) => (
+        {(['ALL', 'ADMIN', 'MENTOR', 'MENTEE', 'COMPANY'] as const).map((r) => (
           <button
             key={r}
             onClick={() => setFilter(r)}
@@ -101,7 +104,7 @@ export default function AdminUsersPage() {
               filter === r ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            {r === 'ALL' ? t.usersAdmin.all : t.usersAdmin[r.toLowerCase() as 'admin' | 'mentor' | 'mentee']}
+            {r === 'ALL' ? t.usersAdmin.all : t.usersAdmin[r.toLowerCase() as RoleLabel]}
           </button>
         ))}
       </div>
@@ -129,7 +132,7 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-gray-500 truncate">{u.email}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge variant={ROLE_VARIANT[u.role]}>{t.usersAdmin[u.role.toLowerCase() as 'admin' | 'mentor' | 'mentee']}</Badge>
+                  <Badge variant={ROLE_VARIANT[u.role]}>{t.usersAdmin[u.role.toLowerCase() as RoleLabel]}</Badge>
                   <Badge variant={u.isActive ? 'success' : 'warning'}>
                     {u.isActive ? t.usersAdmin.active : t.usersAdmin.inactive}
                   </Badge>
