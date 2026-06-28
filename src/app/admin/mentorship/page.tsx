@@ -168,7 +168,7 @@ export default function MentorshipPage() {
               />
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowForm(false)}>{t.common.cancel}</Button>
               <Button onClick={handleCreate} loading={submitting}>Assign</Button>
             </div>
           </div>
@@ -177,7 +177,7 @@ export default function MentorshipPage() {
 
       {/* Relations */}
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400">{t.common.loading}</div>
       ) : relations.length === 0 ? (
         <Card className="text-center py-12">
           <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />

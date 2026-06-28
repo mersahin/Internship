@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { GraduationCap } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { useT } from '@/i18n/client';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useT, useLocale } from '@/i18n/client';
 
 function ResetForm() {
   const t = useT();
+  const locale = useLocale();
   const router = useRouter();
   const token = useSearchParams().get('token') || '';
 
@@ -102,11 +104,12 @@ function ResetForm() {
             </form>
           )}
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            <Link href="/auth/signin" className="text-blue-600 hover:underline font-medium">
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <Link href="/auth/signin" className="text-sm text-blue-600 hover:underline font-medium">
               {t.auth.backToSignin}
             </Link>
-          </p>
+            <LanguageSwitcher current={locale} />
+          </div>
         </div>
       </div>
     </div>

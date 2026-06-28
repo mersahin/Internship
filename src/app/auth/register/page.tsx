@@ -1,5 +1,6 @@
 'use client';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -29,6 +30,7 @@ type RegisterData = z.infer<typeof registerSchema>;
 
 function RegisterForm() {
   const t = useT();
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState('');
@@ -99,7 +101,7 @@ function RegisterForm() {
             <Input
               label={t.auth.invitationToken}
               hint={t.auth.tokenHint}
-              placeholder="Paste your invitation token here"
+              placeholder={t.auth.tokenPlaceholder}
               {...register('token')}
               error={errors.token?.message}
             />
@@ -115,7 +117,7 @@ function RegisterForm() {
               type="email"
               required
               autoComplete="email"
-              hint="Must match the email the invitation was sent to"
+              hint={t.auth.emailMatchHint}
               {...register('email')}
               error={errors.email?.message}
             />
@@ -145,18 +147,19 @@ function RegisterForm() {
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Already have an account?{' '}
+            {t.auth.alreadyAccount}{' '}
             <Link href="/auth/signin" className="text-blue-600 hover:underline font-medium">
-              Sign in
+              {t.auth.signinLink}
             </Link>
           </p>
         </div>
 
-        <p className="text-center text-sm text-gray-400 mt-6">
-          <Link href="/" className="hover:text-gray-600">
-            ← Back to home
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
+            {t.auth.backHome}
           </Link>
-        </p>
+          <LanguageSwitcher current={locale} />
+        </div>
       </div>
     </div>
   );

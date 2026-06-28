@@ -225,7 +225,7 @@ export default function CompaniesPage() {
 
       {/* Companies Grid */}
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400">{t.common.loading}</div>
       ) : filteredCompanies.length === 0 ? (
         <Card className="text-center py-12">
           <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-4" />

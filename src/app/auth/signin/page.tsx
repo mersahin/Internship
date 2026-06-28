@@ -1,5 +1,5 @@
 'use client';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
 
 import { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { GraduationCap } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { roleHome } from '@/lib/roleHome';
 
 const signinSchema = z.object({
@@ -22,6 +23,7 @@ type SignInData = z.infer<typeof signinSchema>;
 
 export default function SignInPage() {
   const t = useT();
+  const locale = useLocale();
   const router = useRouter();
   const { data: session, status } = useSession();
   const [error, setError] = useState('');
@@ -112,18 +114,19 @@ export default function SignInPage() {
           </p>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Have an invitation?{' '}
+            {t.auth.haveInvite}{' '}
             <Link href="/auth/register" className="text-blue-600 hover:underline font-medium">
-              Register here
+              {t.auth.registerHere}
             </Link>
           </p>
         </div>
 
-        <p className="text-center text-sm text-gray-400 mt-6">
-          <Link href="/" className="hover:text-gray-600">
-            ← Back to home
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
+            {t.auth.backHome}
           </Link>
-        </p>
+          <LanguageSwitcher current={locale} />
+        </div>
       </div>
     </div>
   );
