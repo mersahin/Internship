@@ -11,7 +11,17 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const [byStage, mentors, interactions, meetings, rsvpGroups, projectRows] = await Promise.all([
+  // Last 6 calendar months (inclusive), oldest first, as YYYY-MM keys.
+  const now = new Date();
+  const months: string[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const since = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+  const [byStage, mentors, interactions, meetings, rsvpGroups, projectRows, relDates, interactionDates] = await Promise.all([
     prisma.mentorshipRelation.groupBy({ by: ['pipelineStatus'], _count: { _all: true } }),
     prisma.user.findMany({
       where: { role: 'MENTOR' },
@@ -25,7 +35,20 @@ export async function GET() {
     prisma.meeting.count(),
     prisma.meeting.groupBy({ by: ['rsvp'], _count: { _all: true } }),
     prisma.project.findMany({ select: { name: true, _count: { select: { relations: true } } } }),
+    prisma.mentorshipRelation.findMany({ where: { startDate: { gte: since } }, select: { startDate: true } }),
+    prisma.interactionLog.findMany({ where: { date: { gte: since } }, select: { date: true } }),
   ]);
+
+  // Monthly trend buckets.
+  const newRelationsByMonth: Record<string, number> = Object.fromEntries(months.map((m) => [m, 0]));
+  for (const r of relDates) { const k = monthKey(r.startDate); if (k in newRelationsByMonth) newRelationsByMonth[k]++; }
+  const interactionsByMonth: Record<string, number> = Object.fromEntries(months.map((m) => [m, 0]));
+  for (const it of interactionDates) { const k = monthKey(it.date); if (k in interactionsByMonth) interactionsByMonth[k]++; }
+  const trends = {
+    months,
+    newRelations: months.map((m) => newRelationsByMonth[m]),
+    interactions: months.map((m) => interactionsByMonth[m]),
+  };
 
   const projectWorkload = projectRows
     .map((p) => ({ name: p.name, interns: p._count.relations }))
@@ -60,5 +83,6 @@ export async function GET() {
     projectWorkload,
     engagement: { interactions, meetings },
     rsvp: { ...rsvp, acceptanceRate: rsvpAcceptanceRate },
+    trends,
   });
 }

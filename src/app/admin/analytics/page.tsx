@@ -14,6 +14,7 @@ interface Analytics {
   projectWorkload: { name: string; interns: number }[];
   engagement: { interactions: number; meetings: number };
   rsvp: { ACCEPTED?: number; DECLINED?: number; PENDING?: number; acceptanceRate: number };
+  trends?: { months: string[]; newRelations: number[]; interactions: number[] };
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -120,6 +121,38 @@ export default function AdminAnalyticsPage() {
           </div>
         </Card>
       )}
+
+      {data.trends && data.trends.months.length > 0 && (() => {
+        const max = Math.max(1, ...data.trends.newRelations, ...data.trends.interactions);
+        return (
+          <Card className="mt-6">
+            <CardHeader><CardTitle>{t.analytics.trends}</CardTitle></CardHeader>
+            <div className="flex items-end gap-3 h-44 px-2">
+              {data.trends.months.map((m, i) => (
+                <div key={m} className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                  <div className="flex items-end gap-1 flex-1 w-full justify-center">
+                    <div
+                      className="w-3 sm:w-4 bg-blue-500 rounded-t"
+                      style={{ height: `${(data.trends!.newRelations[i] / max) * 100}%` }}
+                      title={`${t.analytics.trendNewRelations}: ${data.trends!.newRelations[i]}`}
+                    />
+                    <div
+                      className="w-3 sm:w-4 bg-emerald-400 rounded-t"
+                      style={{ height: `${(data.trends!.interactions[i] / max) * 100}%` }}
+                      title={`${t.analytics.trendInteractions}: ${data.trends!.interactions[i]}`}
+                    />
+                  </div>
+                  <span className="text-[10px] text-gray-400">{m.slice(5)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-4 mt-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-500 inline-block" />{t.analytics.trendNewRelations}</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-400 inline-block" />{t.analytics.trendInteractions}</span>
+            </div>
+          </Card>
+        );
+      })()}
     </div>
   );
 }
