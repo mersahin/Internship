@@ -69,7 +69,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   // Transfer (admin only): change the owner, preserving the invariant.
   let transferred: string | null = null;
   if (d.ownerType && session.user.role === 'ADMIN') {
-    const owner = await resolveOwner({ ownerType: d.ownerType, ownerUserId: d.ownerUserId, ownerCompanyId: d.ownerCompanyId });
+    // For ADMIN ownership default to the acting admin when no specific user is
+    // given (the UI has no admin picker), so a transfer to "Admin (me)" works
+    // even if the client didn't send an id.
+    const ownerUserId = d.ownerType === 'ADMIN' ? d.ownerUserId || session.user.id : d.ownerUserId;
+    const owner = await resolveOwner({ ownerType: d.ownerType, ownerUserId, ownerCompanyId: d.ownerCompanyId });
     if (!owner) return NextResponse.json({ error: 'Invalid owner' }, { status: 400 });
     Object.assign(data, owner);
     transferred = `${project.ownerType} → ${owner.ownerType}`;

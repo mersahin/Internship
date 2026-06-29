@@ -59,7 +59,9 @@ export async function POST(request: Request) {
   if (session.user.role === 'MENTOR') {
     owner = { ownerType: 'MENTOR' as const, ownerUserId: session.user.id, ownerCompanyId: null };
   } else {
-    owner = await resolveOwner({ ownerType: d.ownerType, ownerUserId: d.ownerUserId, ownerCompanyId: d.ownerCompanyId });
+    // ADMIN ownership defaults to the acting admin when no user id is supplied.
+    const ownerUserId = d.ownerType === 'ADMIN' ? d.ownerUserId || session.user.id : d.ownerUserId;
+    owner = await resolveOwner({ ownerType: d.ownerType, ownerUserId, ownerCompanyId: d.ownerCompanyId });
     if (!owner) return NextResponse.json({ error: 'A valid owner (admin, mentor or company) is required' }, { status: 400 });
   }
 

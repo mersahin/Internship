@@ -89,9 +89,12 @@ export function ProjectsManager({ isAdmin }: { isAdmin: boolean }) {
       // the "exactly one owner" invariant.
       if (isAdmin) {
         payload.ownerType = ownerType;
+        // ADMIN ownership is always the acting admin (no admin picker in this UI);
+        // using a stale ownerUserId from a previous MENTOR owner would fail
+        // server validation ("Invalid owner").
         if (ownerType === 'COMPANY') payload.ownerCompanyId = ownerCompanyId;
         else if (ownerType === 'MENTOR') payload.ownerUserId = ownerUserId;
-        else payload.ownerUserId = ownerUserId || meId; // ADMIN → self by default
+        else payload.ownerUserId = meId; // ADMIN → acting admin
       }
       const url = editingId ? `/api/projects/${editingId}` : '/api/projects';
       const res = await fetch(url, {
@@ -204,7 +207,7 @@ export function ProjectsManager({ isAdmin }: { isAdmin: boolean }) {
           {isAdmin && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-gray-100 pt-3">
               {editingId && <p className="sm:col-span-2 text-xs text-gray-500">{t.projects.transferHint}</p>}
-              <Select label={t.projects.owner} value={ownerType} onChange={(e) => setOwnerType(e.target.value)}
+              <Select label={t.projects.owner} value={ownerType} onChange={(e) => { setOwnerType(e.target.value); setOwnerUserId(''); setOwnerCompanyId(''); }}
                 options={[{ value: 'ADMIN', label: t.projects.ownerAdmin }, { value: 'MENTOR', label: t.projects.ownerMentor }, { value: 'COMPANY', label: t.projects.ownerCompany }]} />
               {ownerType === 'MENTOR' && (
                 <Select label={t.projects.ownerMentor} value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}
