@@ -764,6 +764,8 @@ const en = {
     notificationsSection: 'Notifications',
     emailNotifications: 'Email me about messages and announcements',
     emailNotificationsHint: 'In-app notifications are always shown regardless of this setting.',
+    language: 'Language',
+    languages: { en: 'English', tr: 'Türkçe', de: 'Deutsch' },
   },
 };
 
@@ -1531,6 +1533,8 @@ const tr: Dict = {
     notificationsSection: 'Bildirimler',
     emailNotifications: 'Mesajlar ve duyurular için bana e-posta gönder',
     emailNotificationsHint: 'Uygulama içi bildirimler bu ayardan bağımsız olarak her zaman gösterilir.',
+    language: 'Dil',
+    languages: { en: 'English', tr: 'Türkçe', de: 'Deutsch' },
   },
 };
 
@@ -2296,6 +2300,8 @@ const de: Dict = {
     notificationsSection: 'Benachrichtigungen',
     emailNotifications: 'Benachrichtige mich per E-Mail über Nachrichten und Ankündigungen',
     emailNotificationsHint: 'In-App-Benachrichtigungen werden unabhängig von dieser Einstellung immer angezeigt.',
+    language: 'Sprache',
+    languages: { en: 'English', tr: 'Türkçe', de: 'Deutsch' },
   },
 };
 

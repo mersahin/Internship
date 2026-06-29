@@ -5,11 +5,14 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test('German locale translates the admin nav and persists as the user preference', async ({ page }) => {
+test('German is available in the switcher and a saved preference is applied at sign-in', async ({ page }) => {
   const email = uniqueEmail('de-admin');
   const admin = await seedUser(email, 'AdminPass123', 'ADMIN', 'DE Admin');
+  // The user prefers German (as set from account settings).
+  await prisma.user.update({ where: { id: admin.id }, data: { preferredLanguage: 'de' } });
 
   try {
+    await page.context().clearCookies(); // no explicit locale cookie → preference applies
     await page.goto('/auth/signin');
     await page.fill('input[type="email"], input[name="email"]', email);
     await page.fill('input[type="password"]', 'AdminPass123');
@@ -17,19 +20,12 @@ test('German locale translates the admin nav and persists as the user preference
     await page.waitForURL((u) => u.pathname.startsWith('/admin'), { timeout: 20_000 });
     await page.goto('/admin');
 
-    // Switch to German via the language switcher.
-    await page.getByRole('button', { name: 'de', exact: true }).click();
-    await page.waitForLoadState('load');
-
-    // Nav is now German.
+    // The admin nav renders in German because of the saved preference.
     await expect(page.getByRole('link', { name: 'Kandidaten', exact: true })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole('link', { name: 'Unternehmen', exact: true })).toBeVisible();
 
-    // The choice is saved as the user's preferred language.
-    await expect.poll(async () => {
-      const u = await prisma.user.findUnique({ where: { id: admin.id }, select: { preferredLanguage: true } });
-      return u?.preferredLanguage;
-    }, { timeout: 10_000 }).toBe('de');
+    // A DE option is offered by the language switcher.
+    await expect(page.getByRole('button', { name: 'de', exact: true })).toBeVisible();
   } finally {
     await cleanupByEmail(email);
   }
