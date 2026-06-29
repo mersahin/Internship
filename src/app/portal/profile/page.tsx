@@ -23,6 +23,16 @@ const profileSchema = z.object({
   graduationYear: z.coerce.number().int().min(2010).max(new Date().getFullYear() + 5).optional().or(z.literal(0)),
   skills: z.string().optional(),
   cvUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  displayName: z.string().optional(),
+  bio: z.string().optional(),
+  country: z.string().optional(),
+  timezone: z.string().optional(),
+  linkedinUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  githubUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  portfolioUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  interests: z.string().optional(),
+  targetPosition: z.string().optional(),
+  mentorCapacity: z.coerce.number().int().min(0).max(100).optional().or(z.literal(0)),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -49,6 +59,7 @@ export default function ProfilePage() {
   const [profileViews, setProfileViews] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState('');
 
   const [skillLevels, setSkillLevels] = useState<Record<string, number>>({});
 
@@ -73,6 +84,7 @@ export default function ProfilePage() {
           setProfileViews(user.profileViews || 0);
           setAvatarUrl(user.avatarUrl || null);
           setFullName(user.fullName || '');
+          setRole(user.role || '');
           setSkillLevels((user.skillLevels && typeof user.skillLevels === 'object') ? user.skillLevels : {});
           reset({
             fullName: user.fullName,
@@ -85,6 +97,16 @@ export default function ProfilePage() {
             graduationYear: user.graduationYear || 0,
             skills: user.skills?.join(', ') || '',
             cvUrl: user.cvUrl || '',
+            displayName: user.displayName || '',
+            bio: user.bio || '',
+            country: user.country || '',
+            timezone: user.timezone || '',
+            linkedinUrl: user.linkedinUrl || '',
+            githubUrl: user.githubUrl || '',
+            portfolioUrl: user.portfolioUrl || '',
+            interests: user.interests || '',
+            targetPosition: user.targetPosition || '',
+            mentorCapacity: user.mentorCapacity || 0,
           });
         }
         setLoading(false);
@@ -114,6 +136,7 @@ export default function ProfilePage() {
           skillLevels: levels,
           graduationYear: data.graduationYear || null,
           cvUrl: data.cvUrl || null,
+          mentorCapacity: data.mentorCapacity || null,
           publicProfile,
         }),
       });
@@ -187,6 +210,40 @@ export default function ProfilePage() {
             />
             <Input label={t.profileForm.city} placeholder="e.g. Monheim" {...register('city')} error={errors.city?.message} />
             <Input label={t.profileForm.birthDate} type="date" {...register('birthDate')} error={errors.birthDate?.message} />
+          </div>
+
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-sm font-semibold text-gray-700 mb-4">{t.profileForm.about}</p>
+            <div className="space-y-4">
+              <Input label={t.profileForm.displayName} placeholder={t.profileForm.displayNameHint} {...register('displayName')} error={errors.displayName?.message} />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.profileForm.bio}</label>
+                <textarea
+                  {...register('bio')}
+                  rows={3}
+                  className="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  placeholder={t.profileForm.bioHint}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label={t.profileForm.country} {...register('country')} error={errors.country?.message} />
+                <Input label={t.profileForm.timezone} placeholder="Europe/Berlin" {...register('timezone')} error={errors.timezone?.message} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label="LinkedIn" type="url" placeholder="https://linkedin.com/in/..." {...register('linkedinUrl')} error={errors.linkedinUrl?.message} />
+                <Input label="GitHub" type="url" placeholder="https://github.com/..." {...register('githubUrl')} error={errors.githubUrl?.message} />
+              </div>
+              <Input label={t.profileForm.portfolio} type="url" placeholder="https://..." {...register('portfolioUrl')} error={errors.portfolioUrl?.message} />
+              {role === 'MENTEE' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input label={t.profileForm.targetPosition} placeholder={t.profileForm.targetPositionHint} {...register('targetPosition')} error={errors.targetPosition?.message} />
+                  <Input label={t.profileForm.interests} placeholder={t.profileForm.interestsHint} {...register('interests')} error={errors.interests?.message} />
+                </div>
+              )}
+              {role === 'MENTOR' && (
+                <Input label={t.profileForm.mentorCapacity} type="number" min={0} hint={t.profileForm.mentorCapacityHint} {...register('mentorCapacity')} error={errors.mentorCapacity?.message} />
+              )}
+            </div>
           </div>
 
           <div className="border-t border-gray-100 pt-4">

@@ -19,7 +19,51 @@ const updateProfileSchema = z.object({
   skillLevels: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
   cvUrl: z.string().url().or(z.literal('')).nullable().optional(),
   publicProfile: z.boolean().optional(),
+  // Extended profile fields (EPIC 32).
+  displayName: z.string().max(120).optional(),
+  bio: z.string().max(2000).optional(),
+  country: z.string().max(80).optional(),
+  timezone: z.string().max(80).optional(),
+  linkedinUrl: z.string().url().or(z.literal('')).optional(),
+  githubUrl: z.string().url().or(z.literal('')).optional(),
+  portfolioUrl: z.string().url().or(z.literal('')).optional(),
+  interests: z.string().max(2000).optional(),
+  targetPosition: z.string().max(160).optional(),
+  mentorCapacity: z.number().int().min(0).max(100).nullable().optional(),
 });
+
+// Profile fields surfaced by both GET and PUT responses.
+const PROFILE_SELECT = {
+  id: true,
+  email: true,
+  fullName: true,
+  role: true,
+  phone: true,
+  whatsapp: true,
+  city: true,
+  birthDate: true,
+  referralSource: true,
+  university: true,
+  department: true,
+  graduationYear: true,
+  skills: true,
+  skillLevels: true,
+  cvUrl: true,
+  avatarUrl: true,
+  publicProfile: true,
+  profileViews: true,
+  displayName: true,
+  bio: true,
+  country: true,
+  timezone: true,
+  linkedinUrl: true,
+  githubUrl: true,
+  portfolioUrl: true,
+  interests: true,
+  targetPosition: true,
+  mentorCapacity: true,
+  createdAt: true,
+} as const;
 
 export async function GET() {
   try {
@@ -31,27 +75,7 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-        phone: true,
-        whatsapp: true,
-        city: true,
-        birthDate: true,
-        referralSource: true,
-        university: true,
-        department: true,
-        graduationYear: true,
-        skills: true,
-        skillLevels: true,
-        cvUrl: true,
-        avatarUrl: true,
-        publicProfile: true,
-        profileViews: true,
-        createdAt: true,
-      },
+      select: PROFILE_SELECT,
     });
 
     if (!user) {
@@ -89,30 +113,12 @@ export async function PUT(request: Request) {
       where: { id: session.user.id },
       data: {
         ...rest,
-        cvUrl: cvUrl || null,
+        ...(cvUrl !== undefined ? { cvUrl: cvUrl || null } : {}),
         ...(birthDate !== undefined
           ? { birthDate: birthDate ? new Date(birthDate) : null }
           : {}),
       },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-        phone: true,
-        whatsapp: true,
-        city: true,
-        birthDate: true,
-        referralSource: true,
-        university: true,
-        department: true,
-        graduationYear: true,
-        skills: true,
-        skillLevels: true,
-        cvUrl: true,
-        publicProfile: true,
-        updatedAt: true,
-      },
+      select: PROFILE_SELECT,
     });
 
     await logActivity({ action: 'profile.update', actorId: session.user.id, actorEmail: session.user.email ?? null });
