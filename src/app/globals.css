@@ -30,3 +30,14 @@
     overflow: visible !important;
   }
 }
+
+/* a11y: a clear, consistent keyboard focus ring for interactive elements. */
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

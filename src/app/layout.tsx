@@ -21,6 +21,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale}>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white"
+        >
+          {dict.a11y.skipToContent}
+        </a>
         <Providers locale={locale} dict={dict}>
           {children}
         </Providers>

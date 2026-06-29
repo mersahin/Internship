@@ -33,6 +33,7 @@ const en = {
     company: 'Company Portal',
   },
   lang: { en: 'English', tr: 'Türkçe', label: 'Language' },
+  a11y: { skipToContent: 'Skip to content' },
   company: {
     title: 'Company overview',
     subtitle: 'Candidates linked to your company (read-only)',
@@ -668,6 +669,7 @@ const tr: Dict = {
     company: 'Şirket Portalı',
   },
   lang: { en: 'English', tr: 'Türkçe', label: 'Dil' },
+  a11y: { skipToContent: 'İçeriğe geç' },
   company: {
     title: 'Şirket genel görünümü',
     subtitle: 'Şirketinize bağlı adaylar (salt-okunur)',
