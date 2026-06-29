@@ -13,6 +13,7 @@ import { CvManager } from '@/components/CvManager';
 import { nextAction } from '@/lib/matching';
 import { EvaluationPanel } from '@/components/EvaluationPanel';
 import { GoalsPanel } from '@/components/GoalsPanel';
+import { DocumentsManager } from '@/components/DocumentsManager';
 import { useT, useLocale } from '@/i18n/client';
 
 interface Interaction { id: string; date: string; notes: string; type: string }
@@ -426,6 +427,7 @@ export default function AdminMenteeDetailPage() {
         </Card>
         {rel && <EvaluationPanel relationId={rel.id} />}
         {rel && <GoalsPanel relationId={rel.id} />}
+        <DocumentsManager targetUserId={id} />
       </div>
     </div>
   );
