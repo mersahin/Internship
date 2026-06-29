@@ -43,6 +43,10 @@ export default function MentorshipPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const fetchAll = async () => {
     setLoading(true);
@@ -176,17 +180,50 @@ export default function MentorshipPage() {
         </div>
       )}
 
+      {/* Search + status filter */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {(['ALL', 'ACTIVE', 'COMPLETED'] as const).map((sf) => (
+          <button
+            key={sf}
+            onClick={() => { setStatusFilter(sf); setPage(1); }}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              statusFilter === sf ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            {sf === 'ALL' ? t.usersAdmin.all : sf === 'ACTIVE' ? t.mentorships.active : t.mentorships.completed}
+          </button>
+        ))}
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder={t.mentorships.searchPlaceholder}
+          className="ml-auto w-full sm:w-64 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+        />
+      </div>
+
       {/* Relations */}
       {loading ? (
         <div className="text-center py-12 text-gray-400">{t.common.loading}</div>
       ) : relations.length === 0 ? (
         <Card className="text-center py-12">
           <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No mentorships yet</p>
+          <p className="text-gray-500">{t.mentorships.none}</p>
         </Card>
-      ) : (
+      ) : (() => {
+        const q = search.trim().toLowerCase();
+        const filtered = relations.filter(
+          (r) =>
+            (statusFilter === 'ALL' || r.status === statusFilter) &&
+            (!q || r.mentor.fullName.toLowerCase().includes(q) || r.mentee.fullName.toLowerCase().includes(q) || (r.company?.name.toLowerCase().includes(q) ?? false))
+        );
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        const currentPage = Math.min(page, totalPages);
+        const shown = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+        if (filtered.length === 0) return <Card className="text-center py-12"><p className="text-gray-400">{t.usersAdmin.none}</p></Card>;
+        return (
         <div className="space-y-4">
-          {relations.map((rel) => (
+          {shown.map((rel) => (
             <Card key={rel.id}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -216,8 +253,16 @@ export default function MentorshipPage() {
               </div>
             </Card>
           ))}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>{t.common.prev}</Button>
+              <span className="text-sm text-gray-500">{currentPage} / {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage((p) => p + 1)}>{t.common.next}</Button>
+            </div>
+          )}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
