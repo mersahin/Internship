@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+// This spec needs the banner to actually show, so start from a clean slate
+// (the global default pre-seeds consent for every other spec).
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test('cookie consent banner appears and dismisses; choice is stored', async ({ page }) => {
   await page.context().clearCookies();
   await page.goto('/');
