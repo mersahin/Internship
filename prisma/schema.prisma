@@ -167,6 +167,26 @@ model Company {
   projects    Project[]            @relation("CompanyProjects")
 }
 
+// Outgoing webhook subscription (admin-managed). Events are sent as signed
+// POSTs (HMAC-SHA256 of the body in the X-Signature header).
+model Webhook {
+  id        String   @id @default(cuid())
+  url       String
+  secret    String
+  events    Json     @default("[]")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// Read-only programmatic access key. Only the SHA-256 hash is stored.
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  hashedKey  String    @unique
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
 enum ProjectStatus {
   ACTIVE
   COMPLETED

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { createPasswordResetToken } from '@/lib/passwordReset';
 import { sendPasswordResetEmail, sendEmail } from '@/services/emailService';
 import { notify } from '@/lib/notify';
+import { dispatchWebhook } from '@/lib/webhooks';
 
 // GET ?mentorId= — public: validate the link and return the mentor's name so
 // the application page can greet the applicant.
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
 
   await prisma.mentorshipRelation.create({ data: { mentorId: mentor.id, menteeId: mentee.id } });
   await notify(mentor.id, 'application', `${fullName} applied to be your mentee.`, '/mentor/mentees');
+  await dispatchWebhook('application.created', { mentorId: mentor.id, menteeName: fullName, email });
 
   // Let the applicant set a password so they can sign in to the portal.
   const token = await createPasswordResetToken(mentee.id, 'SET_INITIAL');
