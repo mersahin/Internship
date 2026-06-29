@@ -35,7 +35,10 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'ADMIN' | 'MENTOR' | 'MENTEE' | 'COMPANY'>('ALL');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const PAGE_SIZE = 20;
 
   const loginAs = async (u: AdminUser) => {
     setBusyId(u.id);
@@ -86,7 +89,15 @@ export default function AdminUsersPage() {
     }
   };
 
-  const shown = users.filter((u) => filter === 'ALL' || u.role === filter);
+  const q = search.trim().toLowerCase();
+  const filtered = users.filter(
+    (u) =>
+      (filter === 'ALL' || u.role === filter) &&
+      (!q || u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const shown = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div>
@@ -95,11 +106,11 @@ export default function AdminUsersPage() {
         <p className="text-gray-500 mt-1">{t.usersAdmin.subtitle}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         {(['ALL', 'ADMIN', 'MENTOR', 'MENTEE', 'COMPANY'] as const).map((r) => (
           <button
             key={r}
-            onClick={() => setFilter(r)}
+            onClick={() => { setFilter(r); setPage(1); }}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               filter === r ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
@@ -107,11 +118,18 @@ export default function AdminUsersPage() {
             {r === 'ALL' ? t.usersAdmin.all : t.usersAdmin[r.toLowerCase() as RoleLabel]}
           </button>
         ))}
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder={t.usersAdmin.searchPlaceholder}
+          className="ml-auto w-full sm:w-64 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+        />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t.usersAdmin.title} ({shown.length})</CardTitle>
+          <CardTitle>{t.usersAdmin.title} ({filtered.length})</CardTitle>
         </CardHeader>
         {loading ? (
           <p className="text-center py-12 text-gray-400">{t.common.loading}</p>
@@ -152,6 +170,13 @@ export default function AdminUsersPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-4 mt-2 border-t border-gray-50">
+            <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>{t.common.prev}</Button>
+            <span className="text-sm text-gray-500">{currentPage} / {totalPages}</span>
+            <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage((p) => p + 1)}>{t.common.next}</Button>
           </div>
         )}
       </Card>

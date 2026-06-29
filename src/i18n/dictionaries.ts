@@ -53,6 +53,8 @@ const en = {
     cancel: 'Cancel',
     error: 'Something went wrong',
     delete: 'Delete',
+    prev: 'Previous',
+    next: 'Next',
   },
   dashboard: {
     title: 'Admin Dashboard',
@@ -148,6 +150,10 @@ const en = {
     started: 'Started',
     interactions: 'interactions',
     markComplete: 'Mark complete',
+    searchPlaceholder: 'Search by mentor, mentee or company...',
+    none: 'No mentorships yet',
+    active: 'Active',
+    completed: 'Completed',
   },
   companiesPage: {
     title: 'Companies',
@@ -341,6 +347,7 @@ const en = {
     deactivate: 'Deactivate',
     loginAs: 'Login as',
     none: 'No users',
+    searchPlaceholder: 'Search by name or email...',
   },
   impersonation: {
     viewingAs: 'You are viewing the app as {name}.',
@@ -866,6 +873,8 @@ const tr: Dict = {
     cancel: 'İptal',
     error: 'Bir şeyler ters gitti',
     delete: 'Sil',
+    prev: 'Önceki',
+    next: 'Sonraki',
   },
   dashboard: {
     title: 'Yönetim Paneli',
@@ -961,6 +970,10 @@ const tr: Dict = {
     started: 'Başlangıç',
     interactions: 'etkileşim',
     markComplete: 'Tamamlandı işaretle',
+    searchPlaceholder: 'Mentor, mentee veya şirkete göre ara...',
+    none: 'Henüz mentorluk yok',
+    active: 'Aktif',
+    completed: 'Tamamlandı',
   },
   companiesPage: {
     title: 'Şirketler',
@@ -1154,6 +1167,7 @@ const tr: Dict = {
     deactivate: 'Pasifleştir',
     loginAs: 'Bu kullanıcı gibi gir',
     none: 'Kullanıcı yok',
+    searchPlaceholder: 'Ad veya e-posta ile ara...',
   },
   impersonation: {
     viewingAs: 'Uygulamayı {name} olarak görüntülüyorsun.',
@@ -1677,6 +1691,8 @@ const de: Dict = {
     cancel: 'Abbrechen',
     error: 'Etwas ist schiefgelaufen',
     delete: 'Löschen',
+    prev: 'Zurück',
+    next: 'Weiter',
   },
   dashboard: {
     title: 'Admin-Dashboard',
@@ -1772,6 +1788,10 @@ const de: Dict = {
     started: 'Begonnen',
     interactions: 'Interaktionen',
     markComplete: 'Als abgeschlossen markieren',
+    searchPlaceholder: 'Nach Mentor, Mentee oder Unternehmen suchen...',
+    none: 'Noch keine Mentorings',
+    active: 'Aktiv',
+    completed: 'Abgeschlossen',
   },
   companiesPage: {
     title: 'Unternehmen',
@@ -1965,6 +1985,7 @@ const de: Dict = {
     deactivate: 'Deaktivieren',
     loginAs: 'Anmelden als',
     none: 'Keine Benutzer',
+    searchPlaceholder: 'Nach Name oder E-Mail suchen...',
   },
   impersonation: {
     viewingAs: 'Du siehst die App als {name}.',
