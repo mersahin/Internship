@@ -2,11 +2,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { GraduationCap, LayoutDashboard, Columns3, Building2, Users, UserCheck, UserCog, Mail, ScrollText, BarChart3, FolderGit2, Layers, Radio, Megaphone, FileText, CalendarDays, Settings, Webhook, LogOut } from 'lucide-react';
+import { GraduationCap, LogOut } from 'lucide-react';
 import { getServerDictionary } from '@/i18n/server';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ResponsiveShell } from '@/components/ResponsiveShell';
-import { InstallAppButton } from '@/components/InstallAppButton';
+import { AdminNav } from '@/components/AdminNav';
 import { SidebarAvatar } from '@/components/SidebarAvatar';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { prisma } from '@/lib/prisma';
@@ -38,135 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <p className="text-xs text-gray-500 mt-1">{t.panel.admin}</p>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          <Link
-            href="/admin"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <LayoutDashboard className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.dashboard}
-          </Link>
-          <Link
-            href="/admin/board"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Columns3 className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.board}
-          </Link>
-          <Link
-            href="/admin/companies"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Building2 className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.companies}
-          </Link>
-          <Link
-            href="/admin/candidates"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Users className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.candidates}
-          </Link>
-          <Link
-            href="/admin/mentors"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <UserCheck className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.mentors}
-          </Link>
-          <Link
-            href="/admin/mentorship"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Users className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.mentorships}
-          </Link>
-          <Link
-            href="/admin/projects"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <FolderGit2 className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.projects}
-          </Link>
-          <Link
-            href="/admin/cohorts"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Layers className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.cohorts}
-          </Link>
-          <Link
-            href="/admin/sources"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Radio className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.sources}
-          </Link>
-          <Link
-            href="/admin/users"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <UserCog className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.users}
-          </Link>
-          <Link
-            href="/admin/calendar"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <CalendarDays className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.calendar}
-          </Link>
-          <Link
-            href="/admin/announcements"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Megaphone className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.announcements}
-          </Link>
-          <Link
-            href="/admin/documents"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <FileText className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.documents}
-          </Link>
-          <Link
-            href="/admin/activity"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <ScrollText className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.activity}
-          </Link>
-          <Link
-            href="/admin/analytics"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <BarChart3 className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.analytics}
-          </Link>
-          <Link
-            href="/admin/integrations"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Webhook className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.integrations}
-          </Link>
-          <Link
-            href="/admin/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Settings className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.settings}
-          </Link>
-          <Link
-            href="/admin/invite"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-          >
-            <Mail className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-            {t.nav.invite}
-          </Link>
-          <InstallAppButton />
-        </nav>
+        <AdminNav />
 
         <div className="p-4 border-t border-gray-200">
           <Link
