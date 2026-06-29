@@ -17,10 +17,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  replyTo,
 }: {
   to: string;
   subject: string;
   html: string;
+  replyTo?: string;
 }) {
   if (!process.env.SMTP_USER) {
     console.log(`[Email skipped - no SMTP config] To: ${to}, Subject: ${subject}`);
@@ -32,6 +34,7 @@ export async function sendEmail({
     to,
     subject,
     html,
+    ...(replyTo ? { replyTo } : {}),
   });
 }
 
