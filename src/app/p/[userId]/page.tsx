@@ -21,12 +21,26 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
       city: true,
       skills: true,
       avatarUrl: true,
+      displayName: true,
+      bio: true,
+      country: true,
+      targetPosition: true,
+      linkedinUrl: true,
+      githubUrl: true,
+      portfolioUrl: true,
     },
   });
 
   if (!user) notFound();
 
   const skills = Array.isArray(user.skills) ? (user.skills as string[]) : [];
+  const headline = user.displayName || user.fullName;
+  const location = [user.city, user.country].filter(Boolean).join(', ');
+  const links = [
+    { label: 'LinkedIn', url: user.linkedinUrl },
+    { label: 'GitHub', url: user.githubUrl },
+    { label: t.publicProfile.portfolio, url: user.portfolioUrl },
+  ].filter((l) => l.url);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -43,10 +57,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{user.fullName}</h1>
-              {user.city && <p className="text-gray-500">{user.city}</p>}
+              <h1 className="text-2xl font-bold text-gray-900">{headline}</h1>
+              {user.targetPosition && <p className="text-blue-600 text-sm font-medium">{user.targetPosition}</p>}
+              {location && <p className="text-gray-500">{location}</p>}
             </div>
           </div>
+
+          {user.bio && <p className="text-sm text-gray-700 mb-6 whitespace-pre-line">{user.bio}</p>}
 
           <dl className="space-y-3 text-sm">
             {user.university && (
@@ -80,6 +97,22 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
               </div>
             )}
           </dl>
+
+          {links.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {links.map((l) => (
+                <a
+                  key={l.label}
+                  href={l.url!}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
+            </div>
+          )}
 
           <div className="mt-8 pt-4 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-400">
             <GraduationCap className="h-4 w-4" />

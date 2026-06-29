@@ -9,6 +9,10 @@ const updateCompanySchema = z.object({
   description: z.string().optional(),
   contactEmail: z.string().email().optional().or(z.literal('')),
   industry: z.string().optional(),
+  logoUrl: z.string().url().or(z.literal('')).optional(),
+  size: z.string().max(40).optional(),
+  address: z.string().max(300).optional(),
+  quota: z.number().int().min(0).max(10000).nullable().optional(),
   needs: z
     .array(
       z.object({

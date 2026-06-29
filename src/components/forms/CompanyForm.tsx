@@ -13,6 +13,10 @@ const companySchema = z.object({
   description: z.string().optional(),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
   industry: z.string().optional(),
+  logoUrl: z.string().url('Enter a valid URL').optional().or(z.literal('')),
+  size: z.string().optional(),
+  address: z.string().optional(),
+  quota: z.coerce.number().int().min(0).optional().or(z.literal(0)),
   needs: z.array(
     z.object({
       position: z.string().min(1, 'Position is required'),
@@ -82,11 +86,41 @@ export function CompanyForm({ defaultValues, onSubmit, onCancel, isEditing }: Co
         />
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label="Contact Email"
+          type="email"
+          {...register('contactEmail')}
+          error={errors.contactEmail?.message}
+        />
+        <Input
+          label="Company Size"
+          placeholder="e.g. 11-50"
+          {...register('size')}
+          error={errors.size?.message}
+        />
+        <Input
+          label="Logo URL"
+          type="url"
+          placeholder="https://..."
+          {...register('logoUrl')}
+          error={errors.logoUrl?.message}
+        />
+        <Input
+          label="Internship Quota"
+          type="number"
+          min={0}
+          placeholder="e.g. 5"
+          {...register('quota')}
+          error={errors.quota?.message}
+        />
+      </div>
+
       <Input
-        label="Contact Email"
-        type="email"
-        {...register('contactEmail')}
-        error={errors.contactEmail?.message}
+        label="Address"
+        placeholder="Street, city, country"
+        {...register('address')}
+        error={errors.address?.message}
       />
 
       <div>

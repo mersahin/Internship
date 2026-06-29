@@ -62,6 +62,18 @@ model User {
   city           String?
   birthDate      DateTime?
   referralSource String?
+  // Extended profile (all optional; safe to add to existing rows).
+  displayName    String?
+  bio            String?   @db.Text
+  country        String?
+  timezone       String?
+  linkedinUrl    String?
+  githubUrl      String?
+  portfolioUrl   String?
+  // Mentee: interests / target position. Mentor: max concurrent mentees.
+  interests      String?   @db.Text
+  targetPosition String?
+  mentorCapacity Int?
   // Default true so existing rows stay writable after the column is added;
   // new self-registrations are created with false until they verify by email.
   emailVerified  Boolean   @default(true)
@@ -175,6 +187,10 @@ model Company {
   description  String?
   contactEmail String?
   industry     String?
+  logoUrl      String?
+  size         String?
+  address      String?
+  quota        Int?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
