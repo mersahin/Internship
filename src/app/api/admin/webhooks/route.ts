@@ -1,0 +1,43 @@
+import { NextResponse } from 'next/server';
+import { randomBytes } from 'crypto';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import { WEBHOOK_EVENTS } from '@/lib/webhooks';
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  return session && session.user.role === 'ADMIN' ? session : null;
+}
+
+export async function GET() {
+  if (!(await requireAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const webhooks = await prisma.webhook.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, url: true, events: true, active: true, createdAt: true },
+  });
+  return NextResponse.json({ webhooks, eventTypes: WEBHOOK_EVENTS });
+}
+
+const schema = z.object({
+  url: z.string().url(),
+  events: z.array(z.enum(WEBHOOK_EVENTS)).min(1),
+});
+
+export async function POST(request: Request) {
+  if (!(await requireAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const parsed = schema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
+  const secret = randomBytes(24).toString('hex');
+  const webhook = await prisma.webhook.create({ data: { url: parsed.data.url, events: parsed.data.events, secret } });
+  // Return the secret once so the receiver can verify signatures.
+  return NextResponse.json({ webhook: { id: webhook.id, url: webhook.url, events: webhook.events }, secret }, { status: 201 });
+}
+
+export async function DELETE(request: Request) {
+  if (!(await requireAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const id = new URL(request.url).searchParams.get('id') || '';
+  await prisma.webhook.deleteMany({ where: { id } });
+  return NextResponse.json({ ok: true });
+}
