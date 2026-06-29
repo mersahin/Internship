@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { sendEmail } from '@/services/emailService';
 import { notify } from '@/lib/notify';
+import { replyAddress } from '@/lib/replyToken';
 
 const schema = z.object({
   relationIds: z.array(z.string().min(1)).min(1),
@@ -46,7 +47,8 @@ export async function POST(request: Request) {
   let sent = 0;
   for (const rel of relations) {
     try {
-      await sendEmail({ to: rel.mentee.email, subject, html });
+      // Reply-To routes mentee replies back into this thread (inbound email).
+      await sendEmail({ to: rel.mentee.email, subject, html, replyTo: replyAddress(rel.id) });
     } catch (e) {
       console.error('Mentor email failed for', rel.mentee.email, e);
     }

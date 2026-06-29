@@ -38,3 +38,14 @@ Set for all routes in `next.config.js`: Content-Security-Policy (self by default
 
 ## Reporting a vulnerability
 Email the maintainer (see repository owner). Do not open public issues for sensitive reports.
+
+## Inbound email (reply-by-email)
+Mentor↔mentee threads accept replies by email. Outgoing thread emails set
+`Reply-To: reply+<relationId>.<hmac>@<domain>` where the HMAC is signed with
+`NEXTAUTH_SECRET` (unguessable, tamper-evident). A mail bridge (IMAP poller or
+provider inbound webhook) POSTs parsed mail to `POST /api/inbound-email`
+(`{to, from, text}`). The endpoint accepts a message **only if** the reply
+token's HMAC verifies **and** the sender address is a participant of that
+thread; quoted history is stripped. Set `INBOUND_SECRET` (and have the bridge
+send it as `X-Inbound-Secret`) for defense-in-depth, and `INBOUND_EMAIL_DOMAIN`
+to your mail domain. Ideally the mail server enforces SPF/DKIM before forwarding.

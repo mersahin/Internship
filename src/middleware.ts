@@ -19,7 +19,9 @@ function isAllowlisted(pathname: string) {
     // Public mentee application form.
     pathname === '/api/apply' ||
     // Public profile view counter.
-    pathname === '/api/profile-view'
+    pathname === '/api/profile-view' ||
+    // Inbound email bridge (authenticated by HMAC reply token + shared secret).
+    pathname === '/api/inbound-email'
   );
 }
 
