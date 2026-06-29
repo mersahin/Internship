@@ -6,6 +6,9 @@ test.afterAll(async () => {
 });
 
 async function signIn(page: import('@playwright/test').Page, email: string, password: string, home: string) {
+  // Drop any existing session so the sign-in form is shown (an authenticated
+  // visit to /auth/signin would just redirect to the role home).
+  await page.context().clearCookies();
   await page.goto('/auth/signin');
   await page.fill('input[type="email"], input[name="email"]', email);
   await page.fill('input[type="password"]', password);
