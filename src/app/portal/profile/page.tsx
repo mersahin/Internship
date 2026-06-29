@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { CvManager } from '@/components/CvManager';
 import { AvatarManager } from '@/components/AvatarManager';
+import { DocumentsManager } from '@/components/DocumentsManager';
 
 const profileSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
@@ -352,6 +353,13 @@ export default function ProfilePage() {
           </div>
         </form>
       </Card>
+
+      {userId && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mt-6">
+          <DocumentsManager targetUserId={userId} />
+          <DocumentsManager templates canUpload={false} canDelete={false} />
+        </div>
+      )}
     </div>
   );
 }

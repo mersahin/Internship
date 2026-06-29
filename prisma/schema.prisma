@@ -107,6 +107,7 @@ model User {
   availabilitySlots       AvailabilitySlot[]
   company                 Company?                 @relation("CompanyUsers", fields: [companyId], references: [id])
   source                  Source?                  @relation(fields: [sourceId], references: [id])
+  documents               Document[]               @relation("DocumentOwner")
 }
 
 // A referral source — the education/agency a mentee came from. Admin-managed
@@ -183,6 +184,36 @@ model CvFile {
   uploadedAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum DocumentType {
+  CV
+  CONTRACT
+  CERTIFICATE
+  OTHER
+}
+
+// A stored document (DB bytes, like CvFile). Belongs to a user, or is an
+// admin-managed template (ownerId null + isTemplate) available to everyone.
+// Re-uploading the same (owner, type) keeps prior rows and bumps `version`.
+model Document {
+  id          String       @id @default(cuid())
+  ownerId     String?
+  uploaderId  String
+  type        DocumentType @default(OTHER)
+  title       String
+  filename    String
+  contentType String
+  size        Int
+  data        Bytes
+  version     Int          @default(1)
+  isTemplate  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+
+  owner User? @relation("DocumentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([isTemplate])
 }
 
 model Company {
