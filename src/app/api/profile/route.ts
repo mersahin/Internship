@@ -17,7 +17,8 @@ const updateProfileSchema = z.object({
   graduationYear: z.number().int().nullable().optional(),
   skills: z.array(z.string()).optional(),
   skillLevels: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
-  cvUrl: z.string().url().or(z.literal('')).nullable().optional(),
+  // Full URL or an internal path (/api/cv/<id> set on CV upload).
+  cvUrl: z.string().refine((v) => /^https?:\/\//.test(v) || v.startsWith('/'), 'Invalid URL').or(z.literal('')).nullable().optional(),
   publicProfile: z.boolean().optional(),
   // Extended profile fields (EPIC 32).
   displayName: z.string().max(120).optional(),
