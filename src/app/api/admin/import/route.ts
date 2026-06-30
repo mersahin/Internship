@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { logActivity } from '@/lib/activity';
 
-const schema = z.object({ csv: z.string().min(1).max(200_000) });
+const schema = z.object({ csv: z.string().min(1).max(200_000), dryRun: z.boolean().optional() });
 
 // Split a CSV line honoring simple double-quoted fields.
 function parseLine(line: string): string[] {
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
 
+  const dryRun = parsed.data.dryRun === true;
   const lines = parsed.data.csv.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length && /(^|,)\s*email\s*(,|$)/i.test(lines[0]) && lines[0].toLowerCase().includes('email')) {
     lines.shift(); // drop header
@@ -45,12 +46,25 @@ export async function POST(request: Request) {
   let created = 0;
   const skipped: string[] = [];
   const errors: string[] = [];
+  // Per-row validation report (1-based row numbers, after header).
+  const rows: { row: number; email: string; status: 'create' | 'skip' | 'error'; reason?: string }[] = [];
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const [fullName, email, phone, university, department] = parseLine(line);
-    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errors.push(line); continue; }
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      errors.push(line);
+      rows.push({ row: i + 1, email: email || '', status: 'error', reason: 'invalid email' });
+      continue;
+    }
     const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase() }, select: { id: true } });
-    if (exists) { skipped.push(email); continue; }
+    if (exists) {
+      skipped.push(email);
+      rows.push({ row: i + 1, email, status: 'skip', reason: 'already exists' });
+      continue;
+    }
+    rows.push({ row: i + 1, email, status: 'create' });
+    if (dryRun) continue;
     const password = await bcrypt.hash(randomBytes(18).toString('hex'), 10);
     await prisma.user.create({
       data: {
@@ -66,6 +80,10 @@ export async function POST(request: Request) {
     created++;
   }
 
+  const willCreate = rows.filter((r) => r.status === 'create').length;
+  if (dryRun) {
+    return NextResponse.json({ dryRun: true, willCreate, skipped: skipped.length, errors: errors.length, rows });
+  }
   await logActivity({ action: 'users.bulk_import', actorId: session.user.id, actorEmail: session.user.email ?? null, detail: `created ${created}` });
-  return NextResponse.json({ created, skipped: skipped.length, errors: errors.length });
+  return NextResponse.json({ created, skipped: skipped.length, errors: errors.length, rows });
 }

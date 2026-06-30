@@ -638,6 +638,8 @@ const en = {
     bulkImport: 'Bulk import mentees',
     bulkImportHint: 'Paste CSV: fullName,email,phone,university,department (header optional).',
     import: 'Import',
+    preview: 'Preview (dry run)',
+    dryRunResult: 'Preview: {c} to create, {s} skipped, {e} errors',
     importResult: 'Created {c}, skipped {s}, errors {e}',
   },
   checklist: {
@@ -1505,6 +1507,8 @@ const tr: Dict = {
     bulkImport: 'Toplu mentee içe aktar',
     bulkImportHint: 'CSV yapıştır: fullName,email,phone,university,department (başlık opsiyonel).',
     import: 'İçe aktar',
+    preview: 'Önizle (deneme)',
+    dryRunResult: 'Önizleme: {c} oluşturulacak, {s} atlanacak, {e} hata',
     importResult: '{c} oluşturuldu, {s} atlandı, {e} hata',
   },
   checklist: {
@@ -2370,6 +2374,8 @@ const de: Dict = {
     bulkImport: 'Mentees im Stapel importieren',
     bulkImportHint: 'CSV einfügen: fullName,email,phone,university,department (Kopfzeile optional).',
     import: 'Importieren',
+    preview: 'Vorschau (Probelauf)',
+    dryRunResult: 'Vorschau: {c} zu erstellen, {s} übersprungen, {e} Fehler',
     importResult: 'Erstellt {c}, übersprungen {s}, Fehler {e}',
   },
   checklist: {
