@@ -491,6 +491,7 @@ const en = {
     interim: 'Interim',
     final: 'Final',
     onMentor: 'On mentor',
+    averageScore: 'Average score (trend)',
   },
   goals: {
     title: 'Goals',
@@ -1357,6 +1358,7 @@ const tr: Dict = {
     interim: 'Ara',
     final: 'Final',
     onMentor: 'Mentor için',
+    averageScore: 'Ortalama skor (trend)',
   },
   goals: {
     title: 'Hedefler',
@@ -2221,6 +2223,7 @@ const de: Dict = {
     interim: 'Zwischenbewertung',
     final: 'Abschlussbewertung',
     onMentor: 'Über Mentor',
+    averageScore: 'Durchschnitt (Trend)',
   },
   goals: {
     title: 'Ziele',
