@@ -26,12 +26,13 @@ test('mentee can preview a template and switch its language', async ({ page }) =
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    // Default locale is EN in the test runner → English heading rendered.
-    await expect(dialog.getByRole('heading', { name: /Curriculum Vitae/i })).toBeVisible();
+    // Default locale is EN in the test runner → English body heading rendered.
+    // Target the rendered body H1 (level 1); the modal title is a separate H2.
+    await expect(dialog.getByRole('heading', { level: 1, name: 'Curriculum Vitae' })).toBeVisible();
 
     // Switch to German and confirm the content re-renders.
     await dialog.getByRole('button', { name: 'DE', exact: true }).click();
-    await expect(dialog.getByRole('heading', { name: /Lebenslauf/i })).toBeVisible();
+    await expect(dialog.getByRole('heading', { level: 1, name: 'Lebenslauf' })).toBeVisible();
 
     // Export actions are present (PDF / TXT / MD).
     await expect(dialog.getByRole('button', { name: /Save as PDF|PDF/i })).toBeVisible();
