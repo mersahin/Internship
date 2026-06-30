@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,10 +31,46 @@ export default function InvitePage() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sentInvites, setSentInvites] = useState<
-    { email: string; role: string; time: string; registerUrl: string; emailSent: boolean }[]
-  >([]);
   const [copied, setCopied] = useState<string | null>(null);
+  // Persistent list from the server (survives refresh), plus any freshly-minted
+  // register links (the GET list omits tokens for security).
+  const [invites, setInvites] = useState<{ id: string; email: string; role: string; used: boolean; createdAt: string; expiresAt: string }[]>([]);
+  const [links, setLinks] = useState<Record<string, string>>({});
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const loadInvites = useCallback(async () => {
+    const res = await fetch('/api/invite');
+    if (res.ok) setInvites((await res.json()).invitations ?? []);
+  }, []);
+  useEffect(() => { loadInvites(); }, [loadInvites]);
+
+  const statusOf = (i: { used: boolean; expiresAt: string }) =>
+    i.used ? 'accepted' : new Date(i.expiresAt) < new Date() ? 'expired' : 'pending';
+
+  const resend = async (id: string) => {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/invite/${id}`, { method: 'POST' });
+      const d = await res.json();
+      if (res.ok) {
+        if (d.registerUrl) setLinks((p) => ({ ...p, [id]: d.registerUrl }));
+        setSuccess(d.emailSent ? t.invite.resent : t.invite.resentNoEmail);
+        await loadInvites();
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const cancelInvite = async (id: string) => {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/invite/${id}`, { method: 'DELETE' });
+      if (res.ok) await loadInvites();
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const copyLink = async (url: string) => {
     try {
@@ -79,16 +115,8 @@ export default function InvitePage() {
           ? `Invitation emailed to ${data.email}`
           : `Invitation created for ${data.email} — email not delivered, share the link below manually`
       );
-      setSentInvites((prev) => [
-        {
-          email: data.email,
-          role: data.role,
-          time: new Date().toLocaleString(),
-          registerUrl: body.registerUrl ?? '',
-          emailSent: !!body.emailSent,
-        },
-        ...prev,
-      ]);
+      if (body.invitationId && body.registerUrl) setLinks((p) => ({ ...p, [body.invitationId]: body.registerUrl }));
+      await loadInvites();
       reset({ role: 'MENTEE' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -168,59 +196,54 @@ export default function InvitePage() {
           <CardHeader>
             <CardTitle>{t.invite.recentInvitations}</CardTitle>
           </CardHeader>
-          {sentInvites.length === 0 ? (
+          {invites.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">
               {t.invite.noneSent}
             </p>
           ) : (
             <div className="space-y-3">
-              {sentInvites.map((invite, idx) => (
-                <div key={idx} className="py-3 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{invite.email}</p>
+              {invites.map((invite) => {
+                const status = statusOf(invite);
+                const link = links[invite.id];
+                return (
+                <div key={invite.id} data-testid={`invite-${invite.id}`} className="py-3 border-b border-gray-50 last:border-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{invite.email}</p>
                       <p className="text-xs text-gray-400">
-                        {invite.time} · {invite.emailSent ? t.invite.emailed : t.invite.notEmailed}
+                        {new Date(invite.createdAt).toLocaleDateString()} · {(t.invite.status as Record<string, string>)[status]}
                       </p>
                     </div>
-                    <Badge
-                      variant={
-                        invite.role === 'ADMIN'
-                          ? 'danger'
-                          : invite.role === 'MENTOR'
-                          ? 'info'
-                          : 'success'
-                      }
-                    >
-                      {invite.role}
-                    </Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={invite.role === 'ADMIN' ? 'danger' : invite.role === 'MENTOR' ? 'info' : 'success'}>
+                        {invite.role}
+                      </Badge>
+                      <Badge variant={status === 'accepted' ? 'success' : status === 'expired' ? 'warning' : 'default'}>
+                        {(t.invite.status as Record<string, string>)[status]}
+                      </Badge>
+                    </div>
                   </div>
-                  {invite.registerUrl && (
+                  {!invite.used && (
+                    <div className="mt-2 flex items-center gap-3 text-xs">
+                      <button type="button" disabled={busyId === invite.id} onClick={() => resend(invite.id)} className="text-blue-600 hover:text-blue-800 font-medium">
+                        {t.invite.resend}
+                      </button>
+                      <button type="button" disabled={busyId === invite.id} onClick={() => cancelInvite(invite.id)} className="text-gray-400 hover:text-red-600">
+                        {t.invite.cancel}
+                      </button>
+                    </div>
+                  )}
+                  {link && (
                     <div className="mt-2 flex items-center gap-2">
-                      <input
-                        readOnly
-                        value={invite.registerUrl}
-                        className="flex-1 min-w-0 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1.5 text-gray-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => copyLink(invite.registerUrl)}
-                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 flex-shrink-0"
-                      >
-                        {copied === invite.registerUrl ? (
-                          <>
-                            <Check className="h-3.5 w-3.5" /> {t.invite.copied}
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5" /> {t.invite.copy}
-                          </>
-                        )}
+                      <input readOnly value={link} className="flex-1 min-w-0 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1.5 text-gray-600" />
+                      <button type="button" onClick={() => copyLink(link)} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 flex-shrink-0">
+                        {copied === link ? (<><Check className="h-3.5 w-3.5" /> {t.invite.copied}</>) : (<><Copy className="h-3.5 w-3.5" /> {t.invite.copy}</>)}
                       </button>
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
