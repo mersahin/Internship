@@ -9,6 +9,7 @@ import { authOptions } from '@/lib/auth';
 import { roleHome } from '@/lib/roleHome';
 import { getServerDictionary } from '@/i18n/server';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
@@ -52,6 +53,7 @@ export default async function HomePage() {
             </div>
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               <LanguageSwitcher current={locale} />
+            <ThemeToggle />
               <Link href="/auth/signin" className="text-gray-600 hover:text-gray-900 font-medium transition-colors whitespace-nowrap text-sm sm:text-base">
                 {L.signIn}
               </Link>
@@ -106,7 +108,7 @@ export default async function HomePage() {
                     <rect x={x} y={50} width="180" height="60" rx="14" fill="none" stroke="#6366f1" strokeWidth="1.5" />
                     <circle cx={x + 30} cy={80} r="14" fill="#6366f1" />
                     <text x={x + 30} y={85} textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">{i + 1}</text>
-                    <text x={x + 58} y={85} fill="#1e293b" fontSize="15" fontWeight="600">{label}</text>
+                    <text x={x + 58} y={85} className="fill-slate-800 dark:fill-slate-100" fontSize="15" fontWeight="600">{label}</text>
                     {i < stages.length - 1 && (
                       <g>
                         <line x1={x + 180} y1={80} x2={x + 218} y2={80} stroke="#94a3b8" strokeWidth="2" />
