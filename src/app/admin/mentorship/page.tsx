@@ -117,10 +117,21 @@ export default function MentorshipPage() {
     await fetchAll();
   };
 
+  // Reassign (or clear) the company on an existing mentorship. The backend PUT
+  // already accepts companyId; this just exposes it in the UI.
+  const handleChangeCompany = async (id: string, companyId: string) => {
+    await fetch(`/api/mentorship/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId: companyId || null }),
+    });
+    await fetchAll();
+  };
+
   const mentorOptions = mentors.map((m) => ({ value: m.id, label: m.fullName }));
   const menteeOptions = mentees.map((m) => ({ value: m.id, label: m.fullName }));
   const companyOptions = [
-    { value: '', label: 'No company' },
+    { value: '', label: t.mentorships.noCompany },
     ...companies.map((c) => ({ value: c.id, label: c.name })),
   ];
 
@@ -242,15 +253,24 @@ export default function MentorshipPage() {
                     <Badge variant="default">{rel._count.interactions} {t.mentorships.interactions}</Badge>
                   </div>
                 </div>
-                {rel.status === 'ACTIVE' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleComplete(rel.id)}
-                  >
-                    {t.mentorships.markComplete}
-                  </Button>
-                )}
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <Select
+                    aria-label={t.mentorships.changeCompany}
+                    options={companyOptions}
+                    value={rel.company?.id ?? ''}
+                    onChange={(e) => handleChangeCompany(rel.id, e.target.value)}
+                    className="w-44"
+                  />
+                  {rel.status === 'ACTIVE' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleComplete(rel.id)}
+                    >
+                      {t.mentorships.markComplete}
+                    </Button>
+                  )}
+                </div>
               </div>
             </Card>
           ))}
