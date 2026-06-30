@@ -17,6 +17,7 @@ export default function AdminSettingsPage() {
   const [csv, setCsv] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [importRows, setImportRows] = useState<{ row: number; email: string; status: string; reason?: string }[]>([]);
 
   const load = useCallback(async () => {
     const res = await fetch('/api/admin/settings');
@@ -43,19 +44,23 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const runImport = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const runImport = async (dryRun: boolean) => {
     if (!csv.trim()) return;
-    setImporting(true); setImportResult(null);
+    setImporting(true); setImportResult(null); setImportRows([]);
     try {
       const res = await fetch('/api/admin/import', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ csv }),
+        body: JSON.stringify({ csv, dryRun }),
       });
       const d = await res.json();
       if (res.ok) {
-        setImportResult(t.settings.importResult.replace('{c}', String(d.created)).replace('{s}', String(d.skipped)).replace('{e}', String(d.errors)));
-        setCsv('');
+        setImportRows(d.rows ?? []);
+        if (dryRun) {
+          setImportResult(t.settings.dryRunResult.replace('{c}', String(d.willCreate)).replace('{s}', String(d.skipped)).replace('{e}', String(d.errors)));
+        } else {
+          setImportResult(t.settings.importResult.replace('{c}', String(d.created)).replace('{s}', String(d.skipped)).replace('{e}', String(d.errors)));
+          setCsv('');
+        }
       } else {
         setImportResult(d.error ?? t.common.error);
       }
@@ -96,7 +101,7 @@ export default function AdminSettingsPage() {
 
         <Card>
           <CardHeader><CardTitle>{t.settings.bulkImport}</CardTitle></CardHeader>
-          <form onSubmit={runImport} className="space-y-3">
+          <div className="space-y-3">
             <p className="text-xs text-gray-500">{t.settings.bulkImportHint}</p>
             <textarea
               value={csv}
@@ -105,9 +110,23 @@ export default function AdminSettingsPage() {
               placeholder={'fullName,email,phone,university,department\nAyşe Yılmaz,ayse@example.com,,Boğaziçi,CS'}
               className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono"
             />
-            <Button type="submit" loading={importing} disabled={!csv.trim()}>{t.settings.import}</Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" loading={importing} disabled={!csv.trim()} onClick={() => runImport(true)}>{t.settings.preview}</Button>
+              <Button type="button" loading={importing} disabled={!csv.trim()} onClick={() => runImport(false)}>{t.settings.import}</Button>
+            </div>
             {importResult && <p className="text-sm text-gray-700">{importResult}</p>}
-          </form>
+            {importRows.length > 0 && (
+              <div className="max-h-56 overflow-y-auto border border-gray-100 rounded-lg text-xs">
+                {importRows.map((r) => (
+                  <div key={r.row} className="flex items-center gap-2 px-2 py-1 border-b border-gray-50 last:border-0">
+                    <span className="w-6 text-gray-400">{r.row}</span>
+                    <span className={`w-16 font-medium ${r.status === 'error' ? 'text-red-600' : r.status === 'skip' ? 'text-amber-600' : 'text-green-600'}`}>{r.status}</span>
+                    <span className="flex-1 truncate text-gray-600">{r.email}{r.reason ? ` · ${r.reason}` : ''}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </Card>
       </div>
     </div>
