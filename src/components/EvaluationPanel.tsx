@@ -110,6 +110,30 @@ export function EvaluationPanel({
         <p className="text-sm text-gray-400">{t.evaluation.none}</p>
       ) : (
         <div className="space-y-3">
+          {(() => {
+            // Average score per evaluation (oldest→newest) for a quick trend.
+            const avg = (ev: Evaluation) => {
+              const vals = Object.values(ev.scores).filter((n) => typeof n === 'number');
+              return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+            };
+            const onMentee = items.filter((e) => e.direction === 'MENTOR_ON_MENTEE');
+            if (onMentee.length === 0) return null;
+            const series = [...onMentee].reverse().map(avg);
+            const latest = series[series.length - 1];
+            return (
+              <div className="rounded-lg bg-gray-50 border border-gray-100 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-600">{t.evaluation.averageScore}</span>
+                  <span className="text-sm font-semibold text-gray-900">{latest.toFixed(1)}/5</span>
+                </div>
+                <div className="flex items-end gap-1 h-10">
+                  {series.map((v, i) => (
+                    <div key={i} className="flex-1 bg-blue-400 rounded-t" style={{ height: `${(v / 5) * 100}%` }} title={`${v.toFixed(1)}/5`} />
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           {items.map((ev) => {
             const crit = ev.direction === 'MENTEE_ON_MENTOR' ? MENTOR_CRITERIA : EVAL_CRITERIA;
             return (
