@@ -34,6 +34,7 @@ const updateProfileSchema = z.object({
   emailNotifications: z.boolean().optional(),
   notificationPrefs: z.record(z.string(), z.boolean()).optional(),
   preferredLanguage: z.enum(['en', 'tr', 'de']).optional(),
+  theme: z.enum(['light', 'dark', 'system']).optional(),
 });
 
 // Profile fields surfaced by both GET and PUT responses.
@@ -69,6 +70,7 @@ const PROFILE_SELECT = {
   emailNotifications: true,
   notificationPrefs: true,
   preferredLanguage: true,
+  theme: true,
   createdAt: true,
 } as const;
 

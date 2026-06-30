@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { GraduationCap, LayoutDashboard, LogOut } from 'lucide-react';
 import { getServerDictionary } from '@/i18n/server';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { ResponsiveShell } from '@/components/ResponsiveShell';
 import { InstallAppButton } from '@/components/InstallAppButton';
 import { SidebarAvatar } from '@/components/SidebarAvatar';
@@ -22,7 +23,7 @@ export default async function CompanyLayout({ children }: { children: React.Reac
   return (
     <ResponsiveShell
       sidebar={
-        <aside className="w-64 h-full bg-white border-r border-gray-200 flex flex-col">
+        <aside className="w-64 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-7 w-7 text-blue-600" />
@@ -59,6 +60,7 @@ export default async function CompanyLayout({ children }: { children: React.Reac
             </Link>
             <div className="mt-3 px-3">
               <LanguageSwitcher current={locale} />
+            <ThemeToggle />
             </div>
           </div>
         </aside>

@@ -575,6 +575,7 @@ const en = {
     weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
   },
   activityFeed: { title: 'Activity', none: 'No activity yet', neverActive: 'No recorded activity yet.', inactiveDays: 'Inactive for {d} days — consider reaching out.' },
+  theme: { toggle: 'Toggle theme', light: 'Light', dark: 'Dark', system: 'System' },
   contact: {
     call: 'Call',
     reachedQ: 'Did you reach them?',
@@ -909,6 +910,7 @@ const en = {
     emailNotificationsHint: 'In-app notifications are always shown regardless of this setting.',
     notifCategories: { messages: 'Messages', announcements: 'Announcements', deadlines: 'Stage deadlines', digest: 'Weekly digest' },
     language: 'Language',
+    themeLabel: 'Theme',
     languages: { en: 'English', tr: 'Türkçe', de: 'Deutsch' },
   },
 };
@@ -1488,6 +1490,7 @@ const tr: Dict = {
     weekdays: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
   },
   activityFeed: { title: 'Aktivite', none: 'Henüz aktivite yok', neverActive: 'Henüz kayıtlı aktivite yok.', inactiveDays: '{d} gündür pasif — iletişime geçmeyi düşün.' },
+  theme: { toggle: 'Temayı değiştir', light: 'Açık', dark: 'Koyu', system: 'Sistem' },
   contact: {
     call: 'Ara',
     reachedQ: 'Görüşebildin mi?',
@@ -1822,6 +1825,7 @@ const tr: Dict = {
     emailNotificationsHint: 'Uygulama içi bildirimler bu ayardan bağımsız olarak her zaman gösterilir.',
     notifCategories: { messages: 'Mesajlar', announcements: 'Duyurular', deadlines: 'Aşama son tarihleri', digest: 'Haftalık özet' },
     language: 'Dil',
+    themeLabel: 'Tema',
     languages: { en: 'English', tr: 'Türkçe', de: 'Deutsch' },
   },
 };
@@ -2399,6 +2403,7 @@ const de: Dict = {
     weekdays: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
   },
   activityFeed: { title: 'Aktivität', none: 'Noch keine Aktivität', neverActive: 'Noch keine Aktivität erfasst.', inactiveDays: 'Seit {d} Tagen inaktiv — kontaktiere sie.' },
+  theme: { toggle: 'Theme wechseln', light: 'Hell', dark: 'Dunkel', system: 'System' },
   contact: {
     call: 'Anrufen',
     reachedQ: 'Hast du sie erreicht?',
@@ -2733,6 +2738,7 @@ const de: Dict = {
     emailNotificationsHint: 'In-App-Benachrichtigungen werden unabhängig von dieser Einstellung immer angezeigt.',
     notifCategories: { messages: 'Nachrichten', announcements: 'Ankündigungen', deadlines: 'Phasen-Fristen', digest: 'Wochenübersicht' },
     language: 'Sprache',
+    themeLabel: 'Theme',
     languages: { en: 'English', tr: 'Türkçe', de: 'Deutsch' },
   },
 };
