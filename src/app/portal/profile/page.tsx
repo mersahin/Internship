@@ -23,7 +23,8 @@ const profileSchema = z.object({
   department: z.string().optional(),
   graduationYear: z.coerce.number().int().min(2010).max(new Date().getFullYear() + 5).optional().or(z.literal(0)),
   skills: z.string().optional(),
-  cvUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  // Accept a full URL or an internal path (e.g. /api/cv/<id> set on upload).
+  cvUrl: z.string().refine((v) => v === '' || /^https?:\/\//.test(v) || v.startsWith('/'), 'Please enter a valid URL').optional().or(z.literal('')),
   displayName: z.string().optional(),
   bio: z.string().optional(),
   country: z.string().optional(),
@@ -307,7 +308,8 @@ export default function ProfilePage() {
               })()}
               <Input
                 label={t.profileForm.cvUrl}
-                type="url"
+                type="text"
+                inputMode="url"
                 placeholder="https://drive.google.com/..."
                 hint="Link to your CV"
                 {...register('cvUrl')}
