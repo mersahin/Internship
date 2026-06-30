@@ -117,6 +117,7 @@ export default function MentorMeetingsPage() {
             <Input
               label={t.meetings.meetLink}
               placeholder="https://meet.google.com/abc-defg-hij"
+              hint={t.meetings.meetLinkHint}
               value={meetLink}
               onChange={(e) => setMeetLink(e.target.value)}
             />
