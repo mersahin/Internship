@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { canAccessUserDocs } from '@/lib/documentAccess';
+import { logActivity } from '@/lib/activity';
 
 // GET — download a document (templates: any signed-in user; owned: access-controlled).
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -18,6 +19,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
   }
+
+  // Access log: who downloaded which document (visible in the admin activity log).
+  await logActivity({
+    action: 'document.download',
+    actorId: session.user.id,
+    actorEmail: session.user.email ?? null,
+    targetType: 'document',
+    targetId: doc.id,
+    detail: doc.title,
+  });
 
   return new NextResponse(Buffer.from(doc.data), {
     headers: {
