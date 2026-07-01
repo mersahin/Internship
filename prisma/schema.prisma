@@ -134,12 +134,17 @@ model User {
 // sending CV text to an AI provider (see ConsentType).
 enum ConsentType {
   AI_CV_PARSING
+  // Acceptance of the privacy notice & terms at registration. `version` records
+  // which policy version was accepted (GDPR Art. 7 demonstrability).
+  PRIVACY_POLICY
 }
 
 model UserConsent {
   id        String      @id @default(cuid())
   userId    String
   type      ConsentType
+  // For versioned consents (e.g. PRIVACY_POLICY): the accepted policy version.
+  version   String?
   grantedAt DateTime?
   revokedAt DateTime?
   updatedAt DateTime    @updatedAt
