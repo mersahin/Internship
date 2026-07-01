@@ -10,8 +10,9 @@ const schema = z.object({
   name: z.string().min(1).max(120),
   email: z.string().email().max(200),
   message: z.string().min(1).max(2000),
-  // Honeypot — must stay empty; bots tend to fill every field.
-  website: z.string().max(0).optional().or(z.literal('')),
+  // Honeypot — accept any string so a filled value passes validation and is
+  // dropped silently by the handler (a 400 here would leak the trap to bots).
+  website: z.string().max(500).optional(),
   // Client-stamped render time (ms epoch) to reject instant/bot submits.
   renderedAt: z.number().int().optional(),
 });

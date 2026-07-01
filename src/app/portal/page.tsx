@@ -31,6 +31,7 @@ async function getMenteeData(menteeId: string) {
         githubUrl: true,
         linkedinUrl: true,
         portfolioUrl: true,
+        publicProfile: true,
         createdAt: true,
       },
     }),
@@ -159,10 +160,20 @@ export default async function PortalDashboard() {
               </div>
             )}
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
             <Link href="/portal/profile" className="text-sm text-blue-600 hover:underline">
               {t.portal.editProfile} →
             </Link>
+            {user?.publicProfile && user?.id && (
+              <a
+                href={`/p/${user.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600"
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> {t.portal.viewPublicProfile}
+              </a>
+            )}
           </div>
         </Card>
 
