@@ -13,7 +13,7 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
-    version: '0.2.0',
+    version: '0.2.0-beta',
     date: '2026-07-01',
     highlights: {
       en: [
@@ -48,15 +48,15 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     highlights: {
       en: [
         'The original platform: mentor–mentee pipeline tracking, role-based dashboards for admins, mentors, mentees and companies, interaction logging, analytics, document uploads, two-factor authentication, and multi-language support (EN/TR/DE).',
-        'This is a retroactive summary — detailed release notes start with 0.2.0.',
+        'This is a retroactive summary — detailed release notes start with 0.2.0-beta.',
       ],
       tr: [
         'Orijinal platform: mentor–mentee süreç takibi, admin/mentör/mentee/şirket için rol bazlı panolar, etkileşim kaydı, analitik, doküman yükleme, iki faktörlü kimlik doğrulama ve çok dilli destek (EN/TR/DE).',
-        'Bu geriye dönük bir özettir — detaylı sürüm notları 0.2.0 ile başlar.',
+        'Bu geriye dönük bir özettir — detaylı sürüm notları 0.2.0-beta ile başlar.',
       ],
       de: [
         'Die ursprüngliche Plattform: Mentor-Mentee-Pipeline-Tracking, rollenbasierte Dashboards für Admins, Mentoren, Mentees und Unternehmen, Interaktionsprotokolle, Analysen, Dokument-Uploads, Zwei-Faktor-Authentifizierung und mehrsprachige Unterstützung (EN/TR/DE).',
-        'Dies ist eine rückwirkende Zusammenfassung — detaillierte Versionshinweise beginnen mit 0.2.0.',
+        'Dies ist eine rückwirkende Zusammenfassung — detaillierte Versionshinweise beginnen mit 0.2.0-beta.',
       ],
     },
   },
