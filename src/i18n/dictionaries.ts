@@ -416,12 +416,14 @@ const en = {
     deactivate: 'Deactivate',
     loginAs: 'Login as',
     impersonateReason: 'Reason for accessing this account (optional):',
+    impersonateFailed: 'Could not start impersonation. Please try again.',
     none: 'No users',
     searchPlaceholder: 'Search by name or email...',
   },
   impersonation: {
     viewingAs: 'You are viewing the app as {name}.',
     return: 'Return to your account',
+    stopFailed: 'Could not return to your account. Please try again.',
   },
   adminBoard: {
     subtitle: 'All mentees across every mentor — drag a card to change its stage',
@@ -1436,12 +1438,14 @@ const tr: Dict = {
     deactivate: 'Pasifleştir',
     loginAs: 'Bu kullanıcı gibi gir',
     impersonateReason: 'Bu hesaba erişme nedeni (opsiyonel):',
+    impersonateFailed: 'Taklit oturumu başlatılamadı. Lütfen tekrar deneyin.',
     none: 'Kullanıcı yok',
     searchPlaceholder: 'Ad veya e-posta ile ara...',
   },
   impersonation: {
     viewingAs: 'Uygulamayı {name} olarak görüntülüyorsun.',
     return: 'Kendi hesabına dön',
+    stopFailed: 'Kendi hesabına dönülemedi. Lütfen tekrar deneyin.',
   },
   adminBoard: {
     subtitle: 'Tüm mentorların tüm mentee’leri — aşamayı değiştirmek için kartı sürükle',
@@ -2454,12 +2458,14 @@ const de: Dict = {
     deactivate: 'Deaktivieren',
     loginAs: 'Anmelden als',
     impersonateReason: 'Grund für den Zugriff auf dieses Konto (optional):',
+    impersonateFailed: 'Der Identitätswechsel konnte nicht gestartet werden. Bitte versuche es erneut.',
     none: 'Keine Benutzer',
     searchPlaceholder: 'Nach Name oder E-Mail suchen...',
   },
   impersonation: {
     viewingAs: 'Du siehst die App als {name}.',
     return: 'Zu deinem Konto zurückkehren',
+    stopFailed: 'Rückkehr zu deinem Konto fehlgeschlagen. Bitte versuche es erneut.',
   },
   adminBoard: {
     subtitle: 'Alle Mentees aller Mentoren — ziehe eine Karte, um die Phase zu ändern',
