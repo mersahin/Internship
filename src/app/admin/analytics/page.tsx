@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { AlertTriangle } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { PIPELINE_STATUSES, pipelineLabel } from '@/lib/pipeline';
 import { useT, useLocale } from '@/i18n/client';
 
@@ -15,6 +18,21 @@ interface Analytics {
   engagement: { interactions: number; meetings: number };
   rsvp: { ACCEPTED?: number; DECLINED?: number; PENDING?: number; acceptanceRate: number };
   trends?: { months: string[]; newRelations: number[]; interactions: number[] };
+}
+
+interface AgingItem {
+  relationId: string;
+  menteeId: string;
+  menteeName: string;
+  pipelineStatus: string;
+  daysInStage: number;
+  overdue: boolean;
+}
+interface Aging {
+  stageAging: { pipelineStatus: string; count: number; avgDays: number; medianDays: number }[];
+  oldestStuck: AgingItem[];
+  overdue: AgingItem[];
+  overdueCount: number;
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -30,6 +48,7 @@ export default function AdminAnalyticsPage() {
   const t = useT();
   const locale = useLocale();
   const [data, setData] = useState<Analytics | null>(null);
+  const [aging, setAging] = useState<Aging | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,6 +56,10 @@ export default function AdminAnalyticsPage() {
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
+    fetch('/api/admin/analytics/aging')
+      .then((r) => r.json())
+      .then((d) => setAging(d))
+      .catch(() => {});
   }, []);
 
   if (loading) return <div className="text-center py-12 text-gray-400">{t.common.loading}</div>;
@@ -153,6 +176,63 @@ export default function AdminAnalyticsPage() {
           </Card>
         );
       })()}
+
+      {aging && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {t.analytics.aging.stageAging}
+                {aging.overdueCount > 0 && (
+                  <Badge variant="danger" className="flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" /> {aging.overdueCount} {t.analytics.aging.overdue}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            {aging.stageAging.length === 0 ? (
+              <p className="text-sm text-gray-400">—</p>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                {aging.stageAging.map((s) => (
+                  <div key={s.pipelineStatus} className="flex items-center justify-between py-2 text-sm">
+                    <span className="truncate">{pipelineLabel(s.pipelineStatus, locale)}</span>
+                    <span className="text-gray-500 flex-shrink-0">
+                      {t.analytics.aging.avg} {s.avgDays}{t.analytics.aging.days} · {t.analytics.aging.median} {s.medianDays}{t.analytics.aging.days} · {s.count} {t.analytics.aging.candidates}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>{t.analytics.aging.oldestStuck}</CardTitle></CardHeader>
+            {aging.oldestStuck.length === 0 ? (
+              <p className="text-sm text-gray-400">—</p>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                {aging.oldestStuck.map((it) => (
+                  <Link
+                    key={it.relationId}
+                    href={`/admin/candidates/${it.menteeId}`}
+                    className="flex items-center justify-between gap-2 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/60 -mx-2 px-2 rounded-lg transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate">{it.menteeName}</p>
+                      <p className="text-xs text-gray-400 truncate">{pipelineLabel(it.pipelineStatus, locale)}</p>
+                    </div>
+                    <span className="flex items-center gap-1.5 flex-shrink-0">
+                      {it.overdue && <AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
+                      <span className="text-gray-500">{it.daysInStage}{t.analytics.aging.days}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

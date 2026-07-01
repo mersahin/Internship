@@ -738,6 +738,15 @@ const en = {
     none: 'No activity',
   },
   analytics: {
+    aging: {
+      stageAging: 'Time in stage',
+      oldestStuck: 'Oldest stuck candidates',
+      overdue: 'overdue',
+      avg: 'avg',
+      median: 'median',
+      days: 'd',
+      candidates: 'candidates',
+    },
     title: 'Analytics',
     subtitle: 'Pipeline, mentor workload and engagement insights',
     totalRelations: 'Relations',
@@ -1678,6 +1687,15 @@ const tr: Dict = {
     none: 'Aktivite yok',
   },
   analytics: {
+    aging: {
+      stageAging: 'Aşamada geçen süre',
+      oldestStuck: 'En uzun bekleyen adaylar',
+      overdue: 'süresi geçmiş',
+      avg: 'ort.',
+      median: 'medyan',
+      days: 'g',
+      candidates: 'aday',
+    },
     title: 'Analitik',
     subtitle: 'Pipeline, mentor yükü ve etkileşim içgörüleri',
     totalRelations: 'İlişkiler',
@@ -2616,6 +2634,15 @@ const de: Dict = {
     none: 'Keine Aktivität',
   },
   analytics: {
+    aging: {
+      stageAging: 'Zeit in Phase',
+      oldestStuck: 'Am längsten wartende Kandidaten',
+      overdue: 'überfällig',
+      avg: 'Ø',
+      median: 'Median',
+      days: 'T',
+      candidates: 'Kandidaten',
+    },
     title: 'Analysen',
     subtitle: 'Pipeline, Mentorenauslastung und Engagement-Erkenntnisse',
     totalRelations: 'Beziehungen',
