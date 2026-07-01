@@ -759,6 +759,7 @@ const en = {
     copy: 'Copy',
     copied: 'Copied!',
   },
+  publicContact: { title: 'Send a message', name: 'Your name', email: 'Your email', message: 'Message', send: 'Send', sent: 'Message sent — thank you!', error: 'Could not send. Please try again later.', notice: 'Protected against spam. Your message goes to this person as a notification.' },
   publicProfile: {
     university: 'University',
     department: 'Department',
@@ -1678,6 +1679,7 @@ const tr: Dict = {
     copy: 'Kopyala',
     copied: 'Kopyalandı!',
   },
+  publicContact: { title: 'Mesaj gönder', name: 'Adınız', email: 'E-postanız', message: 'Mesaj', send: 'Gönder', sent: 'Mesaj gönderildi — teşekkürler!', error: 'Gönderilemedi. Lütfen daha sonra tekrar deneyin.', notice: 'Spam’e karşı korumalı. Mesajınız bu kişiye bildirim olarak iletilir.' },
   publicProfile: {
     university: 'Üniversite',
     department: 'Bölüm',
@@ -2595,6 +2597,7 @@ const de: Dict = {
     copy: 'Kopieren',
     copied: 'Kopiert!',
   },
+  publicContact: { title: 'Nachricht senden', name: 'Ihr Name', email: 'Ihre E-Mail', message: 'Nachricht', send: 'Senden', sent: 'Nachricht gesendet — danke!', error: 'Konnte nicht gesendet werden. Bitte später erneut versuchen.', notice: 'Spam-geschützt. Ihre Nachricht geht als Benachrichtigung an diese Person.' },
   publicProfile: {
     university: 'Universität',
     department: 'Fachbereich',
