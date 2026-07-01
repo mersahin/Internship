@@ -759,6 +759,7 @@ const en = {
     copy: 'Copy',
     copied: 'Copied!',
   },
+  publicContact: { title: 'Send a message', name: 'Your name', email: 'Your email', message: 'Message', send: 'Send', sent: 'Message sent — thank you!', error: 'Could not send. Please try again later.', notice: 'Protected against spam. Your message goes to this person as a notification.' },
   publicProfile: {
     university: 'University',
     department: 'Department',
@@ -805,6 +806,7 @@ const en = {
     emailMentor: 'Email',
     viewCv: 'View CV',
     editProfile: 'Edit profile',
+    viewPublicProfile: 'View public profile',
     journey: { title: 'My journey', next: 'Next' },
     notes: { title: 'My notes', privateHint: 'Private — only you can see these.', placeholder: 'Write a note…', add: 'Add note', none: 'No notes yet' },
     meetingRequests: { title: 'Request a meeting', titleManage: 'Meeting requests', topic: 'Topic', when: 'Proposed time', request: 'Request', accept: 'Accept', decline: 'Decline', none: 'No requests yet', noneManage: 'No pending requests', status: { PENDING: 'Pending', ACCEPTED: 'Accepted', DECLINED: 'Declined' } },
@@ -1678,6 +1680,7 @@ const tr: Dict = {
     copy: 'Kopyala',
     copied: 'Kopyalandı!',
   },
+  publicContact: { title: 'Mesaj gönder', name: 'Adınız', email: 'E-postanız', message: 'Mesaj', send: 'Gönder', sent: 'Mesaj gönderildi — teşekkürler!', error: 'Gönderilemedi. Lütfen daha sonra tekrar deneyin.', notice: 'Spam’e karşı korumalı. Mesajınız bu kişiye bildirim olarak iletilir.' },
   publicProfile: {
     university: 'Üniversite',
     department: 'Bölüm',
@@ -1724,6 +1727,7 @@ const tr: Dict = {
     emailMentor: 'E-posta',
     viewCv: 'CV göster',
     editProfile: 'Profili düzenle',
+    viewPublicProfile: 'Herkese açık profili gör',
     journey: { title: 'Sürecim', next: 'Sonraki' },
     notes: { title: 'Notlarım', privateHint: 'Gizli — yalnızca sen görebilirsin.', placeholder: 'Bir not yaz…', add: 'Not ekle', none: 'Henüz not yok' },
     meetingRequests: { title: 'Toplantı iste', titleManage: 'Toplantı talepleri', topic: 'Konu', when: 'Önerilen zaman', request: 'Talep et', accept: 'Kabul et', decline: 'Reddet', none: 'Henüz talep yok', noneManage: 'Bekleyen talep yok', status: { PENDING: 'Bekliyor', ACCEPTED: 'Kabul edildi', DECLINED: 'Reddedildi' } },
@@ -2595,6 +2599,7 @@ const de: Dict = {
     copy: 'Kopieren',
     copied: 'Kopiert!',
   },
+  publicContact: { title: 'Nachricht senden', name: 'Ihr Name', email: 'Ihre E-Mail', message: 'Nachricht', send: 'Senden', sent: 'Nachricht gesendet — danke!', error: 'Konnte nicht gesendet werden. Bitte später erneut versuchen.', notice: 'Spam-geschützt. Ihre Nachricht geht als Benachrichtigung an diese Person.' },
   publicProfile: {
     university: 'Universität',
     department: 'Fachbereich',
@@ -2641,6 +2646,7 @@ const de: Dict = {
     emailMentor: 'E-Mail',
     viewCv: 'Lebenslauf ansehen',
     editProfile: 'Profil bearbeiten',
+    viewPublicProfile: 'Öffentliches Profil ansehen',
     journey: { title: 'Mein Weg', next: 'Nächste' },
     notes: { title: 'Meine Notizen', privateHint: 'Privat — nur du siehst diese.', placeholder: 'Notiz schreiben…', add: 'Notiz hinzufügen', none: 'Noch keine Notizen' },
     meetingRequests: { title: 'Meeting anfragen', titleManage: 'Meeting-Anfragen', topic: 'Thema', when: 'Vorgeschlagene Zeit', request: 'Anfragen', accept: 'Annehmen', decline: 'Ablehnen', none: 'Noch keine Anfragen', noneManage: 'Keine offenen Anfragen', status: { PENDING: 'Ausstehend', ACCEPTED: 'Angenommen', DECLINED: 'Abgelehnt' } },
