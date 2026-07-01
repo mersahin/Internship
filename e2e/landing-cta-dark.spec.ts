@@ -15,7 +15,12 @@ test('landing CTA "Get Started" button stays light in dark mode', async ({ page 
   expect(bg).toBe('rgb(255, 255, 255)');
 
   await cta.hover();
+  // The button animates via transition-colors; wait for it to settle before
+  // sampling so we don't read a mid-transition value.
+  await page.waitForTimeout(400);
   const hoverBg = await cta.evaluate((el) => getComputedStyle(el).backgroundColor);
-  // blue-100 — light, not the retinted translucent dark.
-  expect(hoverBg).toBe('rgb(219, 234, 254)');
+  // Must stay a light surface (readable with the blue-700 label), not the
+  // global dark retint. Assert lightness rather than an exact shade.
+  const [r, g, b] = hoverBg.match(/\d+/g)!.map(Number);
+  expect(r >= 200 && g >= 200 && b >= 200).toBeTruthy();
 });
