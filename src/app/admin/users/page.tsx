@@ -40,29 +40,35 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [impersonateError, setImpersonateError] = useState<string | null>(null);
   const PAGE_SIZE = 20;
 
   const loginAs = async (u: AdminUser) => {
     const reason = window.prompt(t.usersAdmin.impersonateReason) ?? undefined;
     setBusyId(u.id);
+    setImpersonateError(null);
     try {
       const res = await fetch('/api/admin/impersonate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUserId: u.id, reason }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t.usersAdmin.impersonateFailed);
       const signed = await signIn('impersonate', { grant: data.grant, redirect: false });
       if (signed?.ok) {
+        // Land on the impersonated user's own home so the role switch is obvious.
         router.push(roleHome(u.role));
         router.refresh();
         return;
       }
-    } catch {
-      // fall through to reset busy state
+      // signIn resolved without ok — surface it instead of failing silently.
+      throw new Error(signed?.error || t.usersAdmin.impersonateFailed);
+    } catch (err) {
+      setImpersonateError(err instanceof Error ? err.message : t.usersAdmin.impersonateFailed);
+    } finally {
+      setBusyId(null);
     }
-    setBusyId(null);
   };
 
   const load = useCallback(async () => {
@@ -108,6 +114,13 @@ export default function AdminUsersPage() {
         <h1 className="text-2xl font-bold text-gray-900">{t.usersAdmin.title}</h1>
         <p className="text-gray-500 mt-1">{t.usersAdmin.subtitle}</p>
       </div>
+
+      {impersonateError && (
+        <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <span>{impersonateError}</span>
+          <button onClick={() => setImpersonateError(null)} className="font-semibold underline hover:no-underline" aria-label="dismiss">×</button>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {(['ALL', 'ADMIN', 'MENTOR', 'MENTEE', 'COMPANY', 'SOURCE'] as const).map((r) => (
